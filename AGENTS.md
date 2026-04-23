@@ -15,8 +15,8 @@ See `docs/plans/2026-04-23-podsave-v1.md` for the full spec, build phases, and o
 | P2 — probe + `--dry-run` | ✅ | yt-dlp metadata probe, cost preview panel |
 | P3 — download + transcribe | ✅ | yt-dlp `-f bestaudio` (no ffmpeg), AssemblyAI `universal-3-pro` |
 | P4 — extract + render | ✅ | `gpt-5.4-mini` structured output, Obsidian callouts, versioned notes |
-| P5 — queue drain + retry | ⏳ next | `drain`, `retry <video_id>`, queue ergonomics |
-| P6 — polish + dogfood | ⏳ | Docs, 3 real-video dogfood pass |
+| P5 — queue drain + retry | ✅ | `drain`, `retry <video_id>`, queue edit/remove/clear |
+| P6 — polish + dogfood | ⏳ next | Docs, 3 real-video dogfood pass |
 
 ## Project Structure
 

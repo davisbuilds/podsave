@@ -41,5 +41,15 @@ def remove(url: str) -> bool:
     return False
 
 
+def clear() -> int:
+    """Empty the queue. Returns the number of URLs removed."""
+    qp = paths.queue_path()
+    if not qp.exists():
+        return 0
+    removed = count()
+    qp.write_text("")
+    return removed
+
+
 def count() -> int:
     return len(list_all())

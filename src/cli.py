@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import subprocess
 import sys
 from collections.abc import Callable
 from datetime import datetime
@@ -12,8 +14,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from src.errors import PodsaveError
-from src.models import CostEstimate, RunRecord, VideoMeta
+from src.errors import PodsaveError, TranscriptNotFoundError
+from src.models import CostEstimate, ExtractionResult, RunRecord, VideoMeta
 from src.pipeline import download, extract, render, transcribe
 from src.storage import config as config_store
 from src.storage import log as log_store
@@ -165,10 +167,24 @@ def save(
         _render_preview(meta, estimate)
         return
 
+    _process_url(meta, estimate=estimate, force=force, console=Console())
+
+
+def _process_url(
+    meta: VideoMeta,
+    *,
+    estimate: CostEstimate,
+    force: bool,
+    console: Console,
+) -> Path:
+    """Full pipeline for a probed URL: guard → (download+STT|cache) → extract → render → log.
+
+    Returns the note path on success. Raises `PodsaveError` subclasses on failure;
+    callers decide whether to swallow (drain) or let exit-1 propagate (save).
+    """
     download.check_duration(meta, force=force)
     cfg = config_store.load_config()
 
-    console = Console()
     stt_cost = 0.0
     if transcript_store.has(meta.video_id):
         console.print(
@@ -190,7 +206,24 @@ def save(
         stt_cost = estimate.stt_usd
 
     raw_transcript, _ = transcript_store.load(meta.video_id)
+    return _extract_render_and_log(
+        meta,
+        raw_transcript,
+        stt_cost=stt_cost,
+        cfg=cfg,
+        console=console,
+    )
 
+
+def _extract_render_and_log(
+    meta: VideoMeta,
+    raw_transcript: dict[str, Any],
+    *,
+    stt_cost: float,
+    cfg: Any,
+    console: Console,
+) -> Path:
+    """Run extraction + render + append a RunRecord. Returns the note path."""
     with console.status(f"[cyan]extracting[/cyan] top insights via {cfg.extraction_model}…"):
         extraction = extract.extract(
             raw_transcript,
@@ -231,12 +264,11 @@ def save(
             status="complete",
         )
     )
-    console.print(
-        f"[dim]total spent on this run: ${sum(cost_usd.values()):.2f}[/dim]"
-    )
+    console.print(f"[dim]total spent on this run: ${sum(cost_usd.values()):.2f}[/dim]")
+    return note_path
 
 
-def _extraction_cost(extraction: Any) -> float:
+def _extraction_cost(extraction: ExtractionResult) -> float:
     in_rate = cost_utils.OPENAI_INPUT_PER_MILLION_USD
     out_rate = cost_utils.OPENAI_OUTPUT_PER_MILLION_USD
     in_cost = (extraction.input_tokens / 1_000_000.0) * in_rate
@@ -288,13 +320,121 @@ def queue_add(url: str = typer.Argument(..., help="YouTube URL to enqueue.")) ->
 
 @queue_app.command("list")
 def queue_list() -> None:
-    """Print every queued URL in order."""
+    """Print every queued URL in order, plus the backing file path."""
     items = queue_store.list_all()
     if not items:
         typer.echo("(queue empty)")
+    else:
+        for i, url in enumerate(items, start=1):
+            typer.echo(f"{i:3}. {url}")
+    typer.echo(f"\nfile: {paths.queue_path()}")
+
+
+@queue_app.command("edit")
+def queue_edit() -> None:
+    """Open the queue file in $EDITOR (falls back to `open -t` on macOS)."""
+    qp = paths.queue_path()
+    qp.parent.mkdir(parents=True, exist_ok=True)
+    qp.touch(exist_ok=True)
+    editor = os.environ.get("EDITOR")
+    cmd = [editor, str(qp)] if editor else ["open", "-t", str(qp)]
+    subprocess.run(cmd, check=False)
+
+
+@queue_app.command("remove")
+def queue_remove(url: str = typer.Argument(..., help="URL to remove from the queue.")) -> None:
+    """Remove the first occurrence of URL from the queue."""
+    if queue_store.remove(url):
+        typer.echo(f"removed {url} ({queue_store.count()} remaining)")
+    else:
+        typer.echo(f"not in queue: {url}")
+        raise typer.Exit(code=1)
+
+
+@queue_app.command("clear")
+def queue_clear(
+    yes: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation."),
+) -> None:
+    """Empty the queue."""
+    n = queue_store.count()
+    if n == 0:
+        typer.echo("(queue already empty)")
         return
-    for i, url in enumerate(items, start=1):
-        typer.echo(f"{i:3}. {url}")
+    if not yes and not typer.confirm(f"clear {n} URL(s) from the queue?"):
+        typer.echo("aborted")
+        raise typer.Exit(code=1)
+    removed = queue_store.clear()
+    typer.echo(f"cleared {removed} URL(s)")
+
+
+@app.command()
+@handle_errors
+def drain(
+    force: bool = typer.Option(False, "--force", help="Bypass 15m/4h duration guards."),
+) -> None:
+    """Process every URL in the queue; remove on success, leave on failure."""
+    urls = queue_store.list_all()
+    if not urls:
+        typer.echo("(queue empty)")
+        return
+
+    console = Console()
+    successes: list[str] = []
+    failures: list[tuple[str, str]] = []
+
+    for i, url in enumerate(urls, start=1):
+        console.rule(f"[bold]{i}/{len(urls)}[/bold] {url}")
+        try:
+            meta = download.probe(url)
+            estimate = cost_utils.estimate(meta.duration_sec)
+            _process_url(meta, estimate=estimate, force=force, console=console)
+            queue_store.remove(url)
+            successes.append(url)
+        except PodsaveError as exc:
+            console.print(f"[red]failed:[/red] {exc}")
+            failures.append((url, str(exc)))
+            log_store.append(
+                RunRecord(
+                    url=url,
+                    video_id="",
+                    processed_at=datetime.now(),
+                    version=1,
+                    status="failed",
+                    error=str(exc),
+                )
+            )
+
+    console.rule("[bold]drain complete[/bold]")
+    console.print(f"[green]succeeded:[/green] {len(successes)}")
+    console.print(f"[red]failed:[/red]   {len(failures)}")
+    if failures:
+        for u, err in failures:
+            console.print(f"  [dim]· {u}: {err}[/dim]")
+
+
+@app.command()
+@handle_errors
+def retry(
+    video_id: str = typer.Argument(..., help="video_id with a cached transcript."),
+) -> None:
+    """Re-run extraction + render from a cached transcript. No download/STT cost."""
+    if not transcript_store.has(video_id):
+        raise TranscriptNotFoundError(
+            f"no cached transcript for video_id={video_id} in "
+            f"{paths.transcripts_dir()} — process it with `podsave save <url>` first"
+        )
+
+    console = Console()
+    raw_transcript, meta = transcript_store.load(video_id)
+    cfg = config_store.load_config()
+    console.print(f"[yellow]retrying[/yellow] {video_id} from cached transcript")
+    _extract_render_and_log(
+        meta,
+        raw_transcript,
+        stt_cost=0.0,
+        cfg=cfg,
+        console=console,
+    )
 
 
 def main() -> None:
