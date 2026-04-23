@@ -18,3 +18,15 @@ class ConfigInvalidError(PodsaveError):
 
 class TranscriptNotFoundError(PodsaveError):
     pass
+
+
+class InvalidYouTubeURLError(PodsaveError):
+    pass
+
+
+class PlaylistURLError(PodsaveError):
+    pass
+
+
+class ProbeError(PodsaveError):
+    pass

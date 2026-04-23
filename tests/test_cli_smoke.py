@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import subprocess
+from datetime import date
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from src.cli import app
+from src.models import VideoMeta
+from src.pipeline import download
 from src.storage import paths
 
 runner = CliRunner()
@@ -70,3 +74,43 @@ def test_queue_list_empty(podsave_home: Path) -> None:
     result = runner.invoke(app, ["queue", "list"])
     assert result.exit_code == 0
     assert "empty" in result.stdout.lower()
+
+
+def test_save_dry_run_prints_preview(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_meta = VideoMeta(
+        video_id="dQw4w9WgXcQ",
+        url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        title="How I Built This",
+        channel="Some Channel",
+        published=date(2026, 4, 12),
+        duration_sec=2712,
+    )
+    monkeypatch.setattr(download, "probe", lambda url: fake_meta)
+
+    result = runner.invoke(app, ["save", "--dry-run", fake_meta.url])
+    assert result.exit_code == 0, result.stdout
+    assert "How I Built This" in result.stdout
+    assert "Some Channel" in result.stdout
+    assert "45m 12s" in result.stdout
+    assert "Total" in result.stdout
+    assert "$" in result.stdout
+
+
+def test_save_non_dry_run_is_stubbed(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_meta = VideoMeta(
+        video_id="dQw4w9WgXcQ",
+        url="https://youtu.be/dQw4w9WgXcQ",
+        title="T",
+        channel="C",
+        duration_sec=1800,
+    )
+    monkeypatch.setattr(download, "probe", lambda url: fake_meta)
+    result = runner.invoke(app, ["save", fake_meta.url])
+    assert result.exit_code == 1
+    assert "phase 3" in result.stderr.lower()
+
+
+def test_save_rejects_playlist_url_with_clean_error() -> None:
+    result = runner.invoke(app, ["save", "https://www.youtube.com/playlist?list=PLabc123"])
+    assert result.exit_code == 1
+    assert "playlist" in result.stderr.lower()

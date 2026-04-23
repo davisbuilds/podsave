@@ -20,6 +20,26 @@ class VideoMeta(BaseModel):
     duration_sec: int
 
 
+class CostEstimate(BaseModel):
+    """Predicted cost for running a video through the full pipeline."""
+
+    duration_sec: int
+    stt_usd: float
+    extraction_input_usd: float
+    extraction_output_usd: float
+    total_usd: float
+
+    stt_rate_per_hour: float
+    estimated_input_tokens: int
+    input_rate_per_million: float
+    estimated_output_tokens: int
+    output_rate_per_million: float
+
+    @property
+    def extraction_usd(self) -> float:
+        return self.extraction_input_usd + self.extraction_output_usd
+
+
 class RunRecord(BaseModel):
     """One line in ~/.podsave/processed.jsonl. Append-only history of every run."""
 

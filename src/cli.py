@@ -1,14 +1,22 @@
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable
+from functools import wraps
+from typing import Any
 
 import typer
 from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 from src.errors import PodsaveError
+from src.models import CostEstimate, VideoMeta
+from src.pipeline import download
 from src.storage import config as config_store
 from src.storage import paths
 from src.storage import queue as queue_store
+from src.utils import cost as cost_utils
 
 app = typer.Typer(
     add_completion=False,
@@ -24,6 +32,19 @@ err_console = Console(stderr=True)
 def _fail(message: str) -> None:
     err_console.print(f"[red]error:[/red] {message}")
     raise typer.Exit(code=1)
+
+
+def handle_errors(fn: Callable[..., Any]) -> Callable[..., Any]:
+    """Convert any PodsaveError raised inside a command into a clean exit-1 message."""
+
+    @wraps(fn)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        try:
+            return fn(*args, **kwargs)
+        except PodsaveError as exc:
+            _fail(str(exc))
+
+    return wrapper
 
 
 @app.command()
@@ -85,6 +106,62 @@ def init(
     )
     typer.echo(f"wrote {written}")
     typer.echo(f"state directory: {home}")
+
+
+@app.command()
+@handle_errors
+def save(
+    url: str = typer.Argument(..., help="YouTube URL to process."),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Print metadata and estimated cost without spending money.",
+    ),
+) -> None:
+    """Process a single YouTube URL (use --dry-run to preview cost only)."""
+    meta = download.probe(url)
+    estimate = cost_utils.estimate(meta.duration_sec)
+
+    if dry_run:
+        _render_preview(meta, estimate)
+        return
+
+    _fail("full pipeline not implemented yet — this lands in Phase 3 (download + transcribe)")
+
+
+def _render_preview(meta: VideoMeta, estimate: CostEstimate) -> None:
+    console = Console()
+
+    meta_table = Table.grid(padding=(0, 2))
+    meta_table.add_column(style="bold cyan")
+    meta_table.add_column()
+    meta_table.add_row("Title", meta.title)
+    meta_table.add_row("Channel", meta.channel)
+    meta_table.add_row("Duration", f"{cost_utils.format_duration(meta.duration_sec)}")
+    meta_table.add_row(
+        "Published", meta.published.isoformat() if meta.published else "(unknown)"
+    )
+    meta_table.add_row("URL", meta.url)
+
+    cost_table = Table.grid(padding=(0, 2))
+    cost_table.add_column(style="bold")
+    cost_table.add_column(justify="right")
+    cost_table.add_column(style="dim")
+    cost_table.add_row(
+        "AssemblyAI STT",
+        f"${estimate.stt_usd:.2f}",
+        f"{meta.duration_sec / 3600:.2f}h @ ${estimate.stt_rate_per_hour:.2f}/hr",
+    )
+    cost_table.add_row(
+        "OpenAI extract",
+        f"${estimate.extraction_usd:.2f}",
+        f"~{estimate.estimated_input_tokens:,} in + {estimate.estimated_output_tokens} out tok",
+    )
+    cost_table.add_row("", "─" * 8, "")
+    cost_table.add_row("[green]Total[/green]", f"[green]${estimate.total_usd:.2f}[/green]", "")
+
+    console.print(Panel(meta_table, title="Preview", border_style="cyan"))
+    console.print(Panel(cost_table, title="Estimated cost", border_style="yellow"))
 
 
 @queue_app.command("add")
