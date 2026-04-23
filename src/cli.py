@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from collections.abc import Callable
+from datetime import datetime
 from functools import wraps
 from typing import Any
 
@@ -11,13 +12,15 @@ from rich.panel import Panel
 from rich.table import Table
 
 from src.errors import PodsaveError
-from src.models import CostEstimate, VideoMeta
-from src.pipeline import download, transcribe
+from src.models import CostEstimate, RunRecord, VideoMeta
+from src.pipeline import download, extract, render, transcribe
 from src.storage import config as config_store
+from src.storage import log as log_store
 from src.storage import paths
 from src.storage import queue as queue_store
 from src.storage import transcripts as transcript_store
 from src.utils import cost as cost_utils
+from src.utils import filenames
 
 app = typer.Typer(
     add_completion=False,
@@ -136,6 +139,7 @@ def save(
     cfg = config_store.load_config()
 
     console = Console()
+    stt_cost = 0.0
     if transcript_store.has(meta.video_id):
         console.print(
             f"[yellow]cached transcript found[/yellow] for {meta.video_id} — skipping "
@@ -153,11 +157,61 @@ def save(
         tp, mp = transcript_store.save(meta.video_id, raw, meta)
         console.print(f"[green]transcript saved[/green] → {tp}")
         console.print(f"[green]metadata saved[/green]  → {mp}")
+        stt_cost = estimate.stt_usd
 
-    console.print(
-        "\n[dim]extraction + note rendering lands in Phase 4 — "
-        "the transcript is cached and ready to reprocess.[/dim]"
+    raw_transcript, _ = transcript_store.load(meta.video_id)
+
+    with console.status(f"[cyan]extracting[/cyan] top insights via {cfg.extraction_model}…"):
+        extraction = extract.extract(
+            raw_transcript,
+            meta,
+            api_key=cfg.openai_api_key,
+            model=cfg.extraction_model,
+        )
+    console.print(f"[green]extracted[/green] {len(extraction.items)} item(s)")
+
+    extract_cost = _extraction_cost(extraction)
+    processed_at = datetime.now()
+    cost_usd = {"stt": round(stt_cost, 4), "extract": round(extract_cost, 4)}
+
+    vault = cfg.vault_path
+    vault.mkdir(parents=True, exist_ok=True)
+    base_name = filenames.safe_name(meta.channel, meta.title, published=meta.published)
+    note_path, version_num = filenames.next_version_path(vault, base_name)
+    body = render.render_note(
+        meta,
+        extraction,
+        version=version_num,
+        processed_at=processed_at,
+        cost_usd=cost_usd,
     )
+    note_path.write_text(body)
+    console.print(f"[green]note written[/green] → {note_path}")
+
+    log_store.append(
+        RunRecord(
+            url=meta.url,
+            video_id=meta.video_id,
+            processed_at=processed_at,
+            version=version_num,
+            note_path=str(note_path),
+            transcript_path=str(paths.transcripts_dir() / f"{meta.video_id}.json"),
+            cost_usd=cost_usd,
+            duration_sec=meta.duration_sec,
+            status="complete",
+        )
+    )
+    console.print(
+        f"[dim]total spent on this run: ${sum(cost_usd.values()):.2f}[/dim]"
+    )
+
+
+def _extraction_cost(extraction: Any) -> float:
+    in_rate = cost_utils.OPENAI_INPUT_PER_MILLION_USD
+    out_rate = cost_utils.OPENAI_OUTPUT_PER_MILLION_USD
+    in_cost = (extraction.input_tokens / 1_000_000.0) * in_rate
+    out_cost = (extraction.output_tokens / 1_000_000.0) * out_rate
+    return in_cost + out_cost
 
 
 def _render_preview(meta: VideoMeta, estimate: CostEstimate) -> None:

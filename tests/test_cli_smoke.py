@@ -97,7 +97,7 @@ def test_save_dry_run_prints_preview(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_save_non_dry_run_uses_cached_transcript(
-    podsave_home: Path, monkeypatch: pytest.MonkeyPatch
+    podsave_home: Path, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     fake_meta = VideoMeta(
         video_id="dQw4w9WgXcQ",
@@ -107,27 +107,45 @@ def test_save_non_dry_run_uses_cached_transcript(
         duration_sec=1800,
     )
     runner.invoke(app, ["init", "--no-prompt"])
+    vault = tmp_path / "vault"
     paths.config_path().write_text(
         '[api_keys]\nopenai = "sk-test"\nassemblyai = "aai-test"\n'
-        '[paths]\nvault = "/tmp/vault"\n'
+        f'[paths]\nvault = "{vault}"\n'
         '[extraction]\nmodel = "gpt-5.4-mini"\n'
     )
 
     # Seed cache — save() should skip download + transcribe.
+    from src.models import ExtractionResult, Insight
+    from src.pipeline import extract as extract_mod
     from src.storage import transcripts as transcript_store
 
     transcript_store.save(fake_meta.video_id, {"text": "cached"}, fake_meta)
 
     monkeypatch.setattr(download, "probe", lambda url: fake_meta)
 
-    def _fail(*a: object, **kw: object) -> None:
+    def _boom(*a: object, **kw: object) -> None:
         raise AssertionError("download_audio should not be called when cached")
 
-    monkeypatch.setattr(download, "download_audio", _fail)
+    monkeypatch.setattr(download, "download_audio", _boom)
+    monkeypatch.setattr(
+        extract_mod,
+        "extract",
+        lambda *a, **kw: ExtractionResult(
+            items=[Insight(kind="insight", text="cached stuff", rank=1)],
+            model="gpt-5.4-mini",
+            prompt_version="v1",
+            input_tokens=100,
+            output_tokens=50,
+        ),
+    )
 
     result = runner.invoke(app, ["save", fake_meta.url])
     assert result.exit_code == 0, result.stdout
     assert "cached transcript" in result.stdout.lower()
+    assert "note written" in result.stdout.lower()
+    # Note file should exist in vault.
+    notes = list(vault.glob("*.md"))
+    assert len(notes) == 1
 
 
 def test_save_rejects_playlist_url_with_clean_error() -> None:
