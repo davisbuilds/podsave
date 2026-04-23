@@ -36,10 +36,17 @@ def transcribe(audio_path: Path, api_key: str, *, console: Console | None = None
         try:
             transcript = transcriber.transcribe(str(audio_path))
         except aai.types.TranscriptError as exc:
-            raise TranscriptionError(f"AssemblyAI request failed: {exc}") from exc
+            raise TranscriptionError(
+                f"AssemblyAI request failed: {exc}\n"
+                "Check the assemblyai key in ~/.podsave/config.toml "
+                "(or PODSAVE_ASSEMBLYAI_API_KEY)."
+            ) from exc
 
     if transcript.status == aai.TranscriptStatus.error:
-        raise TranscriptionError(f"AssemblyAI error: {transcript.error}")
+        raise TranscriptionError(
+            f"AssemblyAI error: {transcript.error}\n"
+            "If this is an auth error, verify the key in ~/.podsave/config.toml."
+        )
 
     raw = getattr(transcript, "json_response", None)
     if raw is None:

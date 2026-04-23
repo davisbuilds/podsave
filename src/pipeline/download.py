@@ -47,15 +47,24 @@ def probe(url: str) -> VideoMeta:
             "paste individual video URLs instead"
         )
 
-    proc = subprocess.run(
-        [_YT_DLP_CMD, "--dump-single-json", "--no-warnings", "--skip-download", url],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    try:
+        proc = subprocess.run(
+            [_YT_DLP_CMD, "--dump-single-json", "--no-warnings", "--skip-download", url],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except FileNotFoundError as exc:
+        raise ProbeError(
+            "yt-dlp is not installed or not on $PATH — install via `brew install yt-dlp` "
+            "or `pip install yt-dlp`"
+        ) from exc
     if proc.returncode != 0:
         stderr = proc.stderr.strip() or "(no stderr)"
-        raise ProbeError(f"yt-dlp failed for {url!r}: {stderr}")
+        raise ProbeError(
+            f"yt-dlp failed for {url!r}: {stderr}\n"
+            f"Try `yt-dlp --dump-single-json {url}` to reproduce outside podsave."
+        )
 
     return _parse_dump_json(proc.stdout, fallback_url=url)
 
@@ -104,24 +113,34 @@ def download_audio(meta: VideoMeta, dest_dir: Path) -> Path:
     dest_dir.mkdir(parents=True, exist_ok=True)
     output_template = str(dest_dir / f"{meta.video_id}.%(ext)s")
 
-    proc = subprocess.run(
-        [
-            _YT_DLP_CMD,
-            "-f",
-            "bestaudio",
-            "--no-warnings",
-            "--no-playlist",
-            "-o",
-            output_template,
-            meta.url,
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    try:
+        proc = subprocess.run(
+            [
+                _YT_DLP_CMD,
+                "-f",
+                "bestaudio",
+                "--no-warnings",
+                "--no-playlist",
+                "-o",
+                output_template,
+                meta.url,
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except FileNotFoundError as exc:
+        raise DownloadError(
+            "yt-dlp is not installed or not on $PATH — install via `brew install yt-dlp` "
+            "or `pip install yt-dlp`"
+        ) from exc
     if proc.returncode != 0:
         stderr = proc.stderr.strip() or "(no stderr)"
-        raise DownloadError(f"yt-dlp failed to download {meta.url!r}: {stderr}")
+        raise DownloadError(
+            f"yt-dlp failed to download {meta.url!r}: {stderr}\n"
+            "If this is a transient network error, re-run `podsave save <url>`; "
+            "the transcript cache means a successful download only happens once."
+        )
 
     matches = sorted(glob.glob(str(dest_dir / f"{meta.video_id}.*")))
     audio_matches = [m for m in matches if not m.endswith(".json")]

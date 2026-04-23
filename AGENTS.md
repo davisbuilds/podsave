@@ -16,7 +16,8 @@ See `docs/plans/2026-04-23-podsave-v1.md` for the full spec, build phases, and o
 | P3 — download + transcribe | ✅ | yt-dlp `-f bestaudio` (no ffmpeg), AssemblyAI `universal-3-pro` |
 | P4 — extract + render | ✅ | `gpt-5.4-mini` structured output, Obsidian callouts, versioned notes |
 | P5 — queue drain + retry | ✅ | `drain`, `retry <video_id>`, queue edit/remove/clear |
-| P6 — polish + dogfood | ⏳ next | Docs, 3 real-video dogfood pass |
+| P6 — polish + docs | ✅ | Error audit, ARCHITECTURE/FEATURES/SPEC docs |
+| Dogfood | ⏳ | 3 videos: monologue / 2-speaker / ≥3-speaker |
 
 ## Project Structure
 

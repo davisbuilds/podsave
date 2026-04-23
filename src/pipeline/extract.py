@@ -90,7 +90,11 @@ def extract(
             response_format=_ExtractionPayload,
         )
     except Exception as exc:
-        raise ExtractionError(f"OpenAI call failed: {exc}") from exc
+        raise ExtractionError(
+            f"OpenAI call failed ({model}): {exc}\n"
+            "Check the openai key in ~/.podsave/config.toml "
+            "(or PODSAVE_OPENAI_API_KEY) and the extraction model name."
+        ) from exc
 
     payload = completion.choices[0].message.parsed
     if payload is None:
