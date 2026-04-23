@@ -17,7 +17,7 @@ See `docs/plans/2026-04-23-podsave-v1.md` for the full spec, build phases, and o
 | P4 — extract + render | ✅ | `gpt-5.4-mini` structured output, Obsidian callouts, versioned notes |
 | P5 — queue drain + retry | ✅ | `drain`, `retry <video_id>`, queue edit/remove/clear |
 | P6 — polish + docs | ✅ | Error audit, ARCHITECTURE/FEATURES/SPEC docs |
-| Dogfood | ⏳ | 3 videos: monologue / 2-speaker / ≥3-speaker |
+| Dogfood | ✅ | 4 videos, $0.90; revealed + fixed monologue quote timestamp snap |
 
 ## Project Structure
 

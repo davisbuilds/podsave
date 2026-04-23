@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,8 @@ from src.models import ExtractionResult, Insight, VideoMeta
 
 PROMPT_VERSION = "v1"
 _PROMPT_PATH = Path(__file__).parent / "prompts" / "extract_v1.md"
+_QUOTE_MATCH_PREFIX_WORDS = 8
+_QUOTE_MATCH_FALLBACK_WORDS = 4
 
 # Pydantic schema the model is asked to match. Kept separate from Insight so the
 # wire format and the domain model can evolve independently.
@@ -102,6 +105,7 @@ def extract(
 
     items = [_to_insight(item) for item in payload.items]
     items.sort(key=lambda i: i.rank)
+    _refine_quote_timestamps(items, raw_transcript.get("words") or [])
 
     usage = completion.usage
     return ExtractionResult(
@@ -111,6 +115,61 @@ def extract(
         input_tokens=(usage.prompt_tokens if usage else 0),
         output_tokens=(usage.completion_tokens if usage else 0),
     )
+
+
+def _refine_quote_timestamps(items: list[Insight], words: list[dict[str, Any]]) -> None:
+    """Snap each quote's start_ms to the word-level start time where its text begins.
+
+    AssemblyAI utterances can span many minutes on monologue content, so the
+    model often has only a coarse timestamp to return. When word-level data is
+    available we match the quote's opening words against the word stream and
+    overwrite start_ms with the true start. Leaves the model's value alone when
+    no match is found or no words are available.
+    """
+    if not words:
+        return
+    normalized_words = [_normalize_for_match(w.get("text") or "") for w in words]
+    for item in items:
+        if item.kind != "quote":
+            continue
+        found = _find_word_start_ms(item.text, normalized_words, words)
+        if found is not None:
+            item.start_ms = found
+
+
+def _find_word_start_ms(
+    quote_text: str,
+    normalized_words: list[str],
+    words: list[dict[str, Any]],
+) -> int | None:
+    query_tokens = _normalize_for_match(quote_text).split()
+    if not query_tokens:
+        return None
+    for n in (_QUOTE_MATCH_PREFIX_WORDS, _QUOTE_MATCH_FALLBACK_WORDS):
+        prefix = query_tokens[:n]
+        if len(prefix) < n:
+            continue
+        match_index = _find_subsequence(normalized_words, prefix)
+        if match_index is not None:
+            start = words[match_index].get("start")
+            return int(start) if isinstance(start, (int, float)) else None
+    return None
+
+
+def _find_subsequence(haystack: list[str], needle: list[str]) -> int | None:
+    if not needle or len(needle) > len(haystack):
+        return None
+    first = needle[0]
+    for i in range(len(haystack) - len(needle) + 1):
+        if haystack[i] != first:
+            continue
+        if haystack[i : i + len(needle)] == needle:
+            return i
+    return None
+
+
+def _normalize_for_match(s: str) -> str:
+    return re.sub(r"[^a-z0-9 ]+", " ", s.lower()).strip()
 
 
 def _to_insight(item: _ExtractedItem) -> Insight:

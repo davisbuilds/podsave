@@ -118,6 +118,66 @@ def test_extract_raises_on_empty_transcript() -> None:
         extract.extract({}, _meta(), api_key="k", model="gpt-5.4-mini")
 
 
+def test_refine_quote_timestamps_snaps_to_word_start() -> None:
+    from src.models import Insight
+
+    words = [
+        {"text": "The", "start": 10_000},
+        {"text": "world", "start": 10_200},
+        {"text": "is", "start": 10_400},
+        {"text": "a", "start": 10_500},
+        {"text": "dynamic", "start": 10_600},
+        {"text": "mess.", "start": 10_800},
+        {"text": "Later", "start": 450_000},
+        {"text": "on,", "start": 450_400},
+        {"text": "he", "start": 450_800},
+        {"text": "said", "start": 451_000},
+        {"text": "something", "start": 451_200},
+        {"text": "quotable", "start": 451_500},
+        {"text": "here.", "start": 451_800},
+    ]
+    items = [
+        Insight(kind="insight", text="not a quote", start_ms=0, rank=1),
+        Insight(
+            kind="quote",
+            text="The world is a dynamic mess.",
+            speaker="A",
+            start_ms=0,
+            rank=2,
+        ),
+        Insight(
+            kind="quote",
+            text="he said something quotable here",
+            speaker="A",
+            start_ms=0,
+            rank=3,
+        ),
+    ]
+    extract._refine_quote_timestamps(items, words)
+    assert items[0].start_ms == 0  # insights untouched
+    assert items[1].start_ms == 10_000  # matched on 8-word prefix
+    assert items[2].start_ms == 450_800  # matched via 4-word fallback
+
+
+def test_refine_quote_timestamps_leaves_start_when_no_match() -> None:
+    from src.models import Insight
+
+    words = [{"text": "unrelated", "start": 5_000}, {"text": "words", "start": 5_200}]
+    items = [
+        Insight(kind="quote", text="completely different content", start_ms=12_345, rank=1),
+    ]
+    extract._refine_quote_timestamps(items, words)
+    assert items[0].start_ms == 12_345
+
+
+def test_refine_quote_timestamps_no_words_is_noop() -> None:
+    from src.models import Insight
+
+    items = [Insight(kind="quote", text="anything", start_ms=999, rank=1)]
+    extract._refine_quote_timestamps(items, [])
+    assert items[0].start_ms == 999
+
+
 def test_extract_rejects_unknown_kind(monkeypatch: pytest.MonkeyPatch) -> None:
     raw_transcript = {"utterances": [{"speaker": "A", "start": 0, "text": "x"}]}
 
