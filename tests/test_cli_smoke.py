@@ -110,7 +110,7 @@ def test_save_non_dry_run_uses_cached_transcript(
     paths.config_path().write_text(
         '[api_keys]\nopenai = "sk-test"\nassemblyai = "aai-test"\n'
         '[paths]\nvault = "/tmp/vault"\n'
-        '[extraction]\nmodel = "gpt-4.1"\n'
+        '[extraction]\nmodel = "gpt-5.4-mini"\n'
     )
 
     # Seed cache — save() should skip download + transcribe.

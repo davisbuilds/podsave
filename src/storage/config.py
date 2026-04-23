@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from src.errors import ConfigInvalidError, ConfigMissingError
 from src.storage import paths
 
-DEFAULT_EXTRACTION_MODEL = "gpt-4.1"
+DEFAULT_EXTRACTION_MODEL = "gpt-5.4-mini"
 PLACEHOLDER = "REPLACE_ME"
 
 
