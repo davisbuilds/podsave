@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Shortcut to run the podsave CLI without typing "uv run podsave".
+# Usage: ./podsave <url> | ./podsave --dry-run <url> | ./podsave --drain
+exec uv run podsave "$@"

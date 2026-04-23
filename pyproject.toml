@@ -1,0 +1,42 @@
+[project]
+name = "podsave"
+version = "0.1.0"
+description = "YouTube videos into curated Obsidian notes — diarized transcripts, top-10 insights."
+authors = [{name = "davisbuilds"}]
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+  "typer>=0.17.0,<1.0.0",
+  "rich>=14.0.0,<15.0.0",
+  "pydantic>=2.11.0,<3.0.0",
+  "yt-dlp>=2026.1.0",
+  "assemblyai>=0.37.0,<1.0.0",
+  "openai>=1.50.0,<2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0,<9.0.0",
+  "ruff>=0.12.0,<1.0.0",
+]
+
+[project.scripts]
+podsave = "src.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
