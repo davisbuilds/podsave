@@ -96,7 +96,9 @@ def test_save_dry_run_prints_preview(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "$" in result.stdout
 
 
-def test_save_non_dry_run_is_stubbed(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_save_non_dry_run_uses_cached_transcript(
+    podsave_home: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     fake_meta = VideoMeta(
         video_id="dQw4w9WgXcQ",
         url="https://youtu.be/dQw4w9WgXcQ",
@@ -104,10 +106,28 @@ def test_save_non_dry_run_is_stubbed(monkeypatch: pytest.MonkeyPatch) -> None:
         channel="C",
         duration_sec=1800,
     )
+    runner.invoke(app, ["init", "--no-prompt"])
+    paths.config_path().write_text(
+        '[api_keys]\nopenai = "sk-test"\nassemblyai = "aai-test"\n'
+        '[paths]\nvault = "/tmp/vault"\n'
+        '[extraction]\nmodel = "gpt-4.1"\n'
+    )
+
+    # Seed cache — save() should skip download + transcribe.
+    from src.storage import transcripts as transcript_store
+
+    transcript_store.save(fake_meta.video_id, {"text": "cached"}, fake_meta)
+
     monkeypatch.setattr(download, "probe", lambda url: fake_meta)
+
+    def _fail(*a: object, **kw: object) -> None:
+        raise AssertionError("download_audio should not be called when cached")
+
+    monkeypatch.setattr(download, "download_audio", _fail)
+
     result = runner.invoke(app, ["save", fake_meta.url])
-    assert result.exit_code == 1
-    assert "phase 3" in result.stderr.lower()
+    assert result.exit_code == 0, result.stdout
+    assert "cached transcript" in result.stdout.lower()
 
 
 def test_save_rejects_playlist_url_with_clean_error() -> None:

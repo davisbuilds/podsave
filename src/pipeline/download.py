@@ -1,16 +1,37 @@
-"""Thin wrapper around yt-dlp. `probe` fetches metadata without downloading audio."""
+"""Thin wrapper around yt-dlp. `probe` fetches metadata; `download_audio` fetches audio."""
 
 from __future__ import annotations
 
+import glob
 import json
 import subprocess
 from datetime import date
+from pathlib import Path
 
-from src.errors import ProbeError
+from src.errors import DownloadError, DurationGuardError, ProbeError
 from src.models import VideoMeta
 from src.utils.youtube import extract_video_id, is_playlist
 
 _YT_DLP_CMD = "yt-dlp"
+
+MIN_DURATION_SEC = 15 * 60  # 15 minutes
+MAX_DURATION_SEC = 4 * 3600  # 4 hours
+
+
+def check_duration(meta: VideoMeta, *, force: bool) -> None:
+    """Raise DurationGuardError if duration is outside [15m, 4h] and force is False."""
+    if force:
+        return
+    if meta.duration_sec < MIN_DURATION_SEC:
+        raise DurationGuardError(
+            f"video is {meta.duration_sec}s (< {MIN_DURATION_SEC}s floor) — "
+            "pass --force to process short videos"
+        )
+    if meta.duration_sec > MAX_DURATION_SEC:
+        raise DurationGuardError(
+            f"video is {meta.duration_sec}s (> {MAX_DURATION_SEC}s ceiling) — "
+            "pass --force to process long videos (will cost more)"
+        )
 
 
 def probe(url: str) -> VideoMeta:
@@ -72,3 +93,40 @@ def _parse_upload_date(raw: str | None) -> date | None:
     if not raw or len(raw) != 8 or not raw.isdigit():
         return None
     return date(int(raw[0:4]), int(raw[4:6]), int(raw[6:8]))
+
+
+def download_audio(meta: VideoMeta, dest_dir: Path) -> Path:
+    """Download the best audio-only stream for meta into dest_dir.
+
+    Returns the path to the downloaded file (extension determined by YouTube:
+    typically m4a or webm). AssemblyAI accepts both, so we skip ffmpeg conversion.
+    """
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    output_template = str(dest_dir / f"{meta.video_id}.%(ext)s")
+
+    proc = subprocess.run(
+        [
+            _YT_DLP_CMD,
+            "-f",
+            "bestaudio",
+            "--no-warnings",
+            "--no-playlist",
+            "-o",
+            output_template,
+            meta.url,
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        stderr = proc.stderr.strip() or "(no stderr)"
+        raise DownloadError(f"yt-dlp failed to download {meta.url!r}: {stderr}")
+
+    matches = sorted(glob.glob(str(dest_dir / f"{meta.video_id}.*")))
+    audio_matches = [m for m in matches if not m.endswith(".json")]
+    if not audio_matches:
+        raise DownloadError(
+            f"yt-dlp reported success but no audio file found at {dest_dir}/{meta.video_id}.*"
+        )
+    return Path(audio_matches[0])

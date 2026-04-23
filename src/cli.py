@@ -12,10 +12,11 @@ from rich.table import Table
 
 from src.errors import PodsaveError
 from src.models import CostEstimate, VideoMeta
-from src.pipeline import download
+from src.pipeline import download, transcribe
 from src.storage import config as config_store
 from src.storage import paths
 from src.storage import queue as queue_store
+from src.storage import transcripts as transcript_store
 from src.utils import cost as cost_utils
 
 app = typer.Typer(
@@ -117,6 +118,11 @@ def save(
         "--dry-run",
         help="Print metadata and estimated cost without spending money.",
     ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Bypass the 15m/4h duration guards.",
+    ),
 ) -> None:
     """Process a single YouTube URL (use --dry-run to preview cost only)."""
     meta = download.probe(url)
@@ -126,7 +132,32 @@ def save(
         _render_preview(meta, estimate)
         return
 
-    _fail("full pipeline not implemented yet — this lands in Phase 3 (download + transcribe)")
+    download.check_duration(meta, force=force)
+    cfg = config_store.load_config()
+
+    console = Console()
+    if transcript_store.has(meta.video_id):
+        console.print(
+            f"[yellow]cached transcript found[/yellow] for {meta.video_id} — skipping "
+            f"download + STT (saved ~${estimate.stt_usd:.2f})"
+        )
+    else:
+        audio_path = download.download_audio(meta, paths.tmp_dir())
+        console.print(f"[green]downloaded[/green] {audio_path.name}")
+
+        try:
+            raw = transcribe.transcribe(audio_path, cfg.assemblyai_api_key, console=console)
+        finally:
+            audio_path.unlink(missing_ok=True)
+
+        tp, mp = transcript_store.save(meta.video_id, raw, meta)
+        console.print(f"[green]transcript saved[/green] → {tp}")
+        console.print(f"[green]metadata saved[/green]  → {mp}")
+
+    console.print(
+        "\n[dim]extraction + note rendering lands in Phase 4 — "
+        "the transcript is cached and ready to reprocess.[/dim]"
+    )
 
 
 def _render_preview(meta: VideoMeta, estimate: CostEstimate) -> None:

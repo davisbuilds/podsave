@@ -21,8 +21,8 @@ def test_one_hour_matches_expected_rate() -> None:
 
 def test_three_hour_rogan() -> None:
     est = cost_utils.estimate(3 * 3600)
-    assert est.stt_usd > 1.0
-    assert est.stt_usd < 1.2  # $0.37 × 3 ≈ $1.11
+    assert est.stt_usd > 0.5
+    assert est.stt_usd < 0.7  # $0.21 × 3 ≈ $0.63
     assert est.estimated_input_tokens == 36_000
 
 

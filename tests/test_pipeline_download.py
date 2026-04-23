@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 import subprocess
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 import pytest
 
-from src.errors import PlaylistURLError, ProbeError
+from src.errors import DownloadError, DurationGuardError, PlaylistURLError, ProbeError
+from src.models import VideoMeta
 from src.pipeline import download
 
 
@@ -126,3 +128,76 @@ def test_probe_raises_on_garbage_json(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(subprocess, "run", lambda *a, **kw: bad)
     with pytest.raises(ProbeError):
         download.probe("https://youtu.be/dQw4w9WgXcQ")
+
+
+def _meta(duration_sec: int) -> VideoMeta:
+    return VideoMeta(
+        video_id="abc12345678",
+        url="https://youtu.be/abc12345678",
+        title="t",
+        channel="c",
+        duration_sec=duration_sec,
+    )
+
+
+def test_check_duration_rejects_short() -> None:
+    with pytest.raises(DurationGuardError):
+        download.check_duration(_meta(5 * 60), force=False)
+
+
+def test_check_duration_rejects_long() -> None:
+    with pytest.raises(DurationGuardError):
+        download.check_duration(_meta(5 * 3600), force=False)
+
+
+def test_check_duration_passes_in_range() -> None:
+    download.check_duration(_meta(30 * 60), force=False)  # no raise
+
+
+def test_check_duration_force_bypasses_both_bounds() -> None:
+    download.check_duration(_meta(60), force=True)
+    download.check_duration(_meta(10 * 3600), force=True)
+
+
+def test_download_audio_finds_file_after_yt_dlp_success(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    meta = _meta(1800)
+
+    def fake_run(*a: object, **kw: object) -> subprocess.CompletedProcess[str]:
+        # Simulate yt-dlp writing the file.
+        (tmp_path / f"{meta.video_id}.m4a").write_bytes(b"fake audio")
+        return subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    result = download.download_audio(meta, tmp_path)
+    assert result.exists()
+    assert result.suffix == ".m4a"
+
+
+def test_download_audio_raises_on_failure(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *a, **kw: subprocess.CompletedProcess(
+            args=[], returncode=1, stdout="", stderr="ERROR: unavailable"
+        ),
+    )
+    with pytest.raises(DownloadError):
+        download.download_audio(_meta(1800), tmp_path)
+
+
+def test_download_audio_raises_when_no_file_produced(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *a, **kw: subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="", stderr=""
+        ),
+    )
+    with pytest.raises(DownloadError):
+        download.download_audio(_meta(1800), tmp_path)

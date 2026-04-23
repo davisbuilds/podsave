@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from src.models import CostEstimate
 
-ASSEMBLYAI_PER_HOUR_USD = 0.37
+ASSEMBLYAI_PER_HOUR_USD = 0.21  # universal-3-pro
 
 OPENAI_INPUT_PER_MILLION_USD = 2.50
 OPENAI_OUTPUT_PER_MILLION_USD = 10.0

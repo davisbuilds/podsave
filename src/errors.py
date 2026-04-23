@@ -30,3 +30,15 @@ class PlaylistURLError(PodsaveError):
 
 class ProbeError(PodsaveError):
     pass
+
+
+class DurationGuardError(PodsaveError):
+    pass
+
+
+class DownloadError(PodsaveError):
+    pass
+
+
+class TranscriptionError(PodsaveError):
+    pass
