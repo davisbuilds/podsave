@@ -60,7 +60,7 @@ def test_render_note_includes_frontmatter_and_callouts() -> None:
     assert "duration: 19m 40s" in note
     assert "version: 1" in note
     assert "cost_usd: 0.08" in note
-    assert "tags:\n  - podsave\n  - podsave/video" in note
+    assert "tags:\n  - podsave\n---" in note
 
     assert "# Claude Opus 4.7" in note
     assert "> [!note] 1. Insight" in note

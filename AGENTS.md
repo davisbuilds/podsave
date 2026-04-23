@@ -2,7 +2,7 @@
 
 Guidance for coding agents working in this repository.
 
-`podsave` turns YouTube videos into curated Obsidian notes. Pipeline: yt-dlp download → AssemblyAI diarized STT (`universal-3-pro`) → OpenAI structured extraction (`gpt-5.4-mini`, up to 10 insights/quotes/spicy-takes) → Obsidian-flavored markdown note to `~/obsd/Resources/Videos/`.
+`podsave` turns YouTube videos into curated Obsidian notes. Pipeline: yt-dlp download → AssemblyAI diarized STT (`universal-3-pro`) → OpenAI structured extraction (`gpt-5.4-mini`, up to 10 insights/quotes/spicy-takes) → Obsidian-flavored markdown note to `~/obsd/Resources/Podsave/`.
 
 See `docs/plans/2026-04-23-podsave-v1.md` for the full spec, build phases, and open questions.
 
@@ -65,7 +65,7 @@ The CLI writes to paths outside the repo. Know these exist:
 - `~/.podsave/transcripts/<video_id>.json` + `.meta.json` — STT cache (reused on re-runs)
 - `~/.podsave/processed.jsonl` — append-only run log, cost-per-stage
 - `~/.podsave/tmp/` — transient audio download, cleaned after transcription
-- `~/obsd/Resources/Videos/` — Obsidian vault output (user-configurable)
+- `~/obsd/Resources/Podsave/` — Obsidian vault output (user-configurable)
 
 Tests isolate state via the `podsave_home` fixture (sets `$PODSAVE_HOME` to a `tmp_path`).
 
@@ -82,7 +82,7 @@ Tests isolate state via the `podsave_home` fixture (sets `$PODSAVE_HOME` to a `t
 
 Notes use Obsidian-flavored markdown (see the `obsidian-markdown` skill):
 
-- YAML frontmatter with typed properties (`video_id`, `channel`, `url`, `published`, `duration`, `processed`, `version`, `model`, `prompt_version`, `cost_usd`) plus `tags: [podsave, podsave/video]`.
+- YAML frontmatter with typed properties (`video_id`, `channel`, `url`, `published`, `duration`, `processed`, `version`, `model`, `prompt_version`, `cost_usd`) plus `tags: [podsave]`.
 - Items render as callouts: `> [!note]` for insights, `> [!quote]` for quotes (with `[Speaker @ MM:SS](url&t=Ns)` link), `> [!warning]` for spicy takes.
 - Filenames: `Channel — Title [YYYY-MM-DD].md`, NFC-normalized, path-unsafe chars stripped, 180-char cap. Versioning appends ` (v2)` etc.
 

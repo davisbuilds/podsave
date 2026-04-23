@@ -46,7 +46,7 @@ $ podsave save --dry-run https://youtube.com/watch?v=xxx
 # prints metadata + estimated cost, no spend
 
 $ podsave save https://youtube.com/watch?v=xxx
-# full pipeline, writes note to ~/obsd/Resources/Videos/
+# full pipeline, writes note to ~/obsd/Resources/Podsave/
 
 $ podsave queue add <url1>
 $ podsave queue add <url2>

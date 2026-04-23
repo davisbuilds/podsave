@@ -72,7 +72,6 @@ def _frontmatter(
         f"cost_usd: {cost_total}",
         "tags:",
         "  - podsave",
-        "  - podsave/video",
         "---",
     ]
     return "\n".join(lines)

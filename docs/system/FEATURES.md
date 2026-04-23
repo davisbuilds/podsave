@@ -62,7 +62,6 @@ prompt_version: v1
 cost_usd: 0.007
 tags:
   - podsave
-  - podsave/video
 ---
 ```
 

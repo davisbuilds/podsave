@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 DEFAULT_HOME = "~/.podsave"
-DEFAULT_VAULT = "~/obsd/Resources/Videos"
+DEFAULT_VAULT = "~/obsd/Resources/Podsave"
 
 
 def get_home() -> Path:

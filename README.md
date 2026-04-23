@@ -25,7 +25,7 @@ You'll need:
 - **AssemblyAI API key** — `universal-3-pro` model, ~$0.21/hr of audio
 - **OpenAI API key** — `gpt-5.4-mini` by default ($0.75 / $4.50 per M in/out tokens)
 
-Vault defaults to `~/obsd/Resources/Videos/`; override in `~/.podsave/config.toml` under `[paths] vault = "..."`.
+Vault defaults to `~/obsd/Resources/Podsave/`; override in `~/.podsave/config.toml` under `[paths] vault = "..."`.
 
 ## Usage
 
