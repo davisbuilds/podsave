@@ -4,6 +4,7 @@ import sys
 from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
+from pathlib import Path
 from typing import Any
 
 import typer
@@ -110,6 +111,35 @@ def init(
     )
     typer.echo(f"wrote {written}")
     typer.echo(f"state directory: {home}")
+
+    linked = _maybe_link_queue_into_project(Path.cwd(), paths.queue_path())
+    if linked is not None:
+        typer.echo(f"linked queue for in-editor access: {linked} → {paths.queue_path()}")
+
+
+def _maybe_link_queue_into_project(cwd: Path, queue_target: Path) -> Path | None:
+    """If cwd looks like the podsave project, symlink ./queue.txt → ~/.podsave/queue.txt.
+
+    No-ops silently when cwd isn't the project, when a queue.txt already exists,
+    or when the symlink can't be created.
+    """
+    pyproject = cwd / "pyproject.toml"
+    if not pyproject.is_file():
+        return None
+    try:
+        if "podsave" not in pyproject.read_text():
+            return None
+    except OSError:
+        return None
+
+    link = cwd / "queue.txt"
+    if link.exists() or link.is_symlink():
+        return None
+    try:
+        link.symlink_to(queue_target)
+    except OSError:
+        return None
+    return link
 
 
 @app.command()

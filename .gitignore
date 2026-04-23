@@ -17,3 +17,6 @@ htmlcov/
 .DS_Store
 Thumbs.db
 ._*
+
+# Symlink to ~/.podsave/queue.txt for convenient in-editor editing
+queue.txt

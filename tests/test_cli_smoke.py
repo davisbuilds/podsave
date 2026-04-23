@@ -50,6 +50,51 @@ def test_init_creates_state_dir_and_config(podsave_home: Path) -> None:
     assert paths.transcripts_dir().exists()
 
 
+def test_init_creates_project_queue_symlink(
+    podsave_home: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "pyproject.toml").write_text('[project]\nname = "podsave"\n')
+    monkeypatch.chdir(project)
+
+    result = runner.invoke(app, ["init", "--no-prompt"])
+    assert result.exit_code == 0, result.stdout
+
+    link = project / "queue.txt"
+    assert link.is_symlink()
+    assert link.resolve() == paths.queue_path().resolve()
+    assert "linked queue" in result.stdout.lower()
+
+
+def test_init_skips_symlink_when_not_in_project(
+    podsave_home: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = runner.invoke(app, ["init", "--no-prompt"])
+    assert result.exit_code == 0
+    assert not (elsewhere / "queue.txt").exists()
+    assert "linked queue" not in result.stdout.lower()
+
+
+def test_init_skips_symlink_when_queue_already_exists(
+    podsave_home: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "pyproject.toml").write_text('name = "podsave"\n')
+    (project / "queue.txt").write_text("pre-existing\n")
+    monkeypatch.chdir(project)
+
+    result = runner.invoke(app, ["init", "--no-prompt"])
+    assert result.exit_code == 0
+    assert (project / "queue.txt").read_text() == "pre-existing\n"
+    assert "linked queue" not in result.stdout.lower()
+
+
 def test_init_does_not_overwrite_existing_config(podsave_home: Path) -> None:
     runner.invoke(app, ["init", "--no-prompt"])
     paths.config_path().write_text("custom = true\n")
