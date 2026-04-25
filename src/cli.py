@@ -417,6 +417,97 @@ def drain(
 
 
 @app.command()
+def doctor(
+    clean: bool = typer.Option(
+        False, "--clean", help="Delete leftover audio files in ~/.podsave/tmp/."
+    ),
+) -> None:
+    """Inspect podsave state — tmp orphans, cached transcripts without notes, config sanity."""
+    console = Console()
+    issues = 0
+
+    tmp_files = sorted(p for p in paths.tmp_dir().glob("*") if p.is_file())
+    if tmp_files:
+        issues += 1
+        tmp_table = Table.grid(padding=(0, 2))
+        tmp_table.add_column(style="bold")
+        tmp_table.add_column(justify="right", style="dim")
+        for p in tmp_files:
+            tmp_table.add_row(p.name, f"{p.stat().st_size / 1024:.1f} KB")
+        title = "Tmp orphans (--clean to remove)" if not clean else "Tmp orphans (removing…)"
+        console.print(Panel(tmp_table, title=title, border_style="yellow"))
+        if clean:
+            for p in tmp_files:
+                p.unlink(missing_ok=True)
+            console.print(f"[green]removed[/green] {len(tmp_files)} file(s)")
+
+    completed_ids = {r.video_id for r in log_store.read_all() if r.status == "complete"}
+    transcripts = sorted(paths.transcripts_dir().glob("*.json"))
+    orphan_transcripts = [
+        p
+        for p in transcripts
+        if not p.name.endswith(".meta.json") and p.stem not in completed_ids
+    ]
+    if orphan_transcripts:
+        issues += 1
+        orphan_table = Table.grid(padding=(0, 2))
+        orphan_table.add_column(style="bold cyan")
+        orphan_table.add_column()
+        for p in orphan_transcripts:
+            video_id = p.stem
+            title = "(no meta)"
+            meta_path = p.with_suffix(".meta.json")
+            if meta_path.exists():
+                try:
+                    title = VideoMeta.model_validate_json(meta_path.read_text()).title
+                except Exception:
+                    pass
+            orphan_table.add_row(video_id, title)
+        console.print(
+            Panel(
+                orphan_table,
+                title="Cached transcripts without a complete run (try `podsave retry <video_id>`)",
+                border_style="yellow",
+            )
+        )
+
+    config_issues = _config_sanity()
+    if config_issues:
+        issues += 1
+        cfg_table = Table.grid(padding=(0, 2))
+        cfg_table.add_column(style="bold red")
+        cfg_table.add_column()
+        for label, msg in config_issues:
+            cfg_table.add_row(label, msg)
+        console.print(Panel(cfg_table, title="Config", border_style="red"))
+
+    if issues == 0:
+        console.print("[green]all clear — no issues found.[/green]")
+
+
+def _config_sanity() -> list[tuple[str, str]]:
+    """Return (label, message) pairs for any config problems worth surfacing."""
+    issues: list[tuple[str, str]] = []
+    cfg_path = paths.config_path()
+    if not cfg_path.exists():
+        issues.append(("missing", f"no config at {cfg_path} — run `podsave init`"))
+        return issues
+    try:
+        cfg = config_store.load_config()
+    except PodsaveError as exc:
+        issues.append(("invalid", str(exc)))
+        return issues
+    if not cfg.vault_path.exists():
+        issues.append(
+            (
+                "vault",
+                f"vault path missing: {cfg.vault_path} (will be created on first save)",
+            )
+        )
+    return issues
+
+
+@app.command()
 def stats() -> None:
     """Print lifetime usage: notes, failed runs, hours saved, total spend, top channels."""
     records = log_store.read_all()
