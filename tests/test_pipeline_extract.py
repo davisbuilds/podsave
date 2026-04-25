@@ -105,7 +105,7 @@ def test_extract_parses_openai_response(monkeypatch: pytest.MonkeyPatch) -> None
     assert result.items[1].kind == "quote"
     assert result.items[1].start_ms == 500
     assert result.model == "gpt-5.4-mini"
-    assert result.prompt_version == "v1"
+    assert result.prompt_version == "v2"
     assert result.input_tokens == 1234
     assert result.output_tokens == 56
 
@@ -173,6 +173,53 @@ def test_refine_quote_timestamps_no_words_is_noop() -> None:
     items = [Insight(kind="quote", text="anything", start_ms=999, rank=1)]
     extract._refine_quote_timestamps(items, [])
     assert items[0].start_ms == 999
+
+
+def test_extract_returns_speaker_map(monkeypatch: pytest.MonkeyPatch) -> None:
+    raw_transcript = {"utterances": [{"speaker": "A", "start": 0, "text": "Hi."}]}
+
+    class _Usage:
+        prompt_tokens = 1
+        completion_tokens = 1
+
+    class _Message:
+        parsed = extract._ExtractionPayload(
+            items=[extract._ExtractedItem(kind="insight", text="x", rank=1)],
+            speakers=[
+                extract._SpeakerLabel(label="A", name="Andrew Huberman", confidence="high"),
+                extract._SpeakerLabel(label="B", name="Lex", confidence="low"),
+                extract._SpeakerLabel(label="C", name=None, confidence=None),
+            ],
+        )
+
+    class _Choice:
+        message = _Message()
+
+    class _Completion:
+        choices = [_Choice()]
+        usage = _Usage()
+
+    class _FakeClient:
+        def __init__(self, *a: Any, **kw: Any) -> None:
+            self.chat = type(
+                "_C",
+                (),
+                {
+                    "completions": type(
+                        "_Comp",
+                        (),
+                        {"parse": staticmethod(lambda *a, **kw: _Completion())},
+                    )
+                },
+            )()
+
+    monkeypatch.setattr(extract, "OpenAI", _FakeClient)
+    result = extract.extract(raw_transcript, _meta(), api_key="k", model="m")
+
+    assert result.speakers == {"A": "Andrew Huberman", "B": "Lex (?)"}
+    # C is omitted entirely (no name) — render falls back to letter.
+    assert "C" not in result.speakers
+    assert result.prompt_version == "v2"
 
 
 def test_extract_rejects_unknown_kind(monkeypatch: pytest.MonkeyPatch) -> None:

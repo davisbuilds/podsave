@@ -59,6 +59,11 @@ class ExtractionResult(BaseModel):
     prompt_version: str
     input_tokens: int = 0
     output_tokens: int = 0
+    speakers: dict[str, str] = Field(default_factory=dict)
+    """Letter (A/B/C…) → display name. Low-confidence names already include a `(?)` suffix.
+
+    Empty when the model couldn't identify any speakers; render falls back to "Speaker A".
+    """
 
 
 class RunRecord(BaseModel):

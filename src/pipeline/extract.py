@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from openai import OpenAI
 from pydantic import BaseModel
@@ -12,8 +12,8 @@ from pydantic import BaseModel
 from src.errors import PodsaveError
 from src.models import ExtractionResult, Insight, VideoMeta
 
-PROMPT_VERSION = "v1"
-_PROMPT_PATH = Path(__file__).parent / "prompts" / "extract_v1.md"
+PROMPT_VERSION = "v2"
+_PROMPT_PATH = Path(__file__).parent / "prompts" / "extract_v2.md"
 _QUOTE_MATCH_PREFIX_WORDS = 8
 _QUOTE_MATCH_FALLBACK_WORDS = 4
 
@@ -30,8 +30,15 @@ class _ExtractedItem(BaseModel):
     rank: int
 
 
+class _SpeakerLabel(BaseModel):
+    label: str
+    name: str | None = None
+    confidence: Literal["high", "low"] | None = None
+
+
 class _ExtractionPayload(BaseModel):
     items: list[_ExtractedItem]
+    speakers: list[_SpeakerLabel] = []
 
 
 class ExtractionError(PodsaveError):
@@ -106,6 +113,7 @@ def extract(
     items = [_to_insight(item) for item in payload.items]
     items.sort(key=lambda i: i.rank)
     _refine_quote_timestamps(items, raw_transcript.get("words") or [])
+    speakers = _project_speakers(payload.speakers)
 
     usage = completion.usage
     return ExtractionResult(
@@ -114,7 +122,23 @@ def extract(
         prompt_version=PROMPT_VERSION,
         input_tokens=(usage.prompt_tokens if usage else 0),
         output_tokens=(usage.completion_tokens if usage else 0),
+        speakers=speakers,
     )
+
+
+def _project_speakers(labels: list[_SpeakerLabel]) -> dict[str, str]:
+    """Build the label → display-name map. Drops entries with no name; tags low confidence."""
+    out: dict[str, str] = {}
+    for entry in labels:
+        if not entry.name:
+            continue
+        clean_name = entry.name.strip()
+        if not clean_name:
+            continue
+        if entry.confidence == "low":
+            clean_name = f"{clean_name} (?)"
+        out[entry.label.strip()] = clean_name
+    return out
 
 
 def _refine_quote_timestamps(items: list[Insight], words: list[dict[str, Any]]) -> None:

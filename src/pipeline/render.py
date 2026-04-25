@@ -40,7 +40,7 @@ def render_note(
             "",
             "## Top picks",
             "",
-            _callouts(meta, extraction.items),
+            _callouts(meta, extraction.items, extraction.speakers),
             "",
             _footer(extraction),
             "",
@@ -93,25 +93,31 @@ def _header_line(meta: VideoMeta) -> str:
     return " · ".join(pieces)
 
 
-def _callouts(meta: VideoMeta, items: list[Insight]) -> str:
-    return "\n\n".join(_callout(meta, item) for item in items)
+def _callouts(meta: VideoMeta, items: list[Insight], speakers: dict[str, str]) -> str:
+    return "\n\n".join(_callout(meta, item, speakers) for item in items)
 
 
-def _callout(meta: VideoMeta, item: Insight) -> str:
+def _callout(meta: VideoMeta, item: Insight, speakers: dict[str, str]) -> str:
     callout_type = _CALLOUT_TYPE_BY_KIND.get(item.kind, "note")
-    title = _callout_title(meta, item)
+    title = _callout_title(meta, item, speakers)
     body_lines = [f"> {line}" for line in _body_lines(item)]
     return f"> [!{callout_type}] {title}\n" + "\n".join(body_lines)
 
 
-def _callout_title(meta: VideoMeta, item: Insight) -> str:
+def _callout_title(meta: VideoMeta, item: Insight, speakers: dict[str, str]) -> str:
     base = f"{item.rank}. {_KIND_LABEL[item.kind]}"
     if item.kind == "quote" and item.start_ms is not None:
         seconds = item.start_ms // 1000
         link = timestamp_url(meta.video_id, seconds)
-        speaker = f"Speaker {item.speaker}" if item.speaker else "Unknown"
+        speaker = _resolve_speaker(item.speaker, speakers)
         return f"{base} — [{speaker} @ {_mmss(seconds)}]({link})"
     return base
+
+
+def _resolve_speaker(letter: str | None, speakers: dict[str, str]) -> str:
+    if not letter:
+        return "Unknown"
+    return speakers.get(letter) or f"Speaker {letter}"
 
 
 def _body_lines(item: Insight) -> list[str]:

@@ -84,6 +84,47 @@ def test_render_note_handles_missing_published() -> None:
     assert "**Published:**" not in note
 
 
+def test_render_resolves_speaker_name_when_known() -> None:
+    meta, extraction = _fixture()
+    extraction = extraction.model_copy(update={"speakers": {"A": "Andrew Huberman"}})
+    note = render.render_note(
+        meta,
+        extraction,
+        version=1,
+        processed_at=datetime(2026, 4, 23, 12, 0, 0),
+        cost_usd={"stt": 0.0, "extract": 0.0},
+    )
+    assert "Andrew Huberman @ 0:17" in note
+    assert "Speaker A @ 0:17" not in note
+
+
+def test_render_low_confidence_speaker_keeps_marker() -> None:
+    meta, extraction = _fixture()
+    # extract.py already formats low-confidence names with a `(?)` suffix.
+    extraction = extraction.model_copy(update={"speakers": {"A": "Andrew Huberman (?)"}})
+    note = render.render_note(
+        meta,
+        extraction,
+        version=1,
+        processed_at=datetime(2026, 4, 23, 12, 0, 0),
+        cost_usd={"stt": 0.0, "extract": 0.0},
+    )
+    assert "Andrew Huberman (?) @ 0:17" in note
+
+
+def test_render_falls_back_to_speaker_letter_when_unknown() -> None:
+    meta, extraction = _fixture()
+    # No speakers in the map → existing behavior preserved.
+    note = render.render_note(
+        meta,
+        extraction,
+        version=1,
+        processed_at=datetime(2026, 4, 23, 12, 0, 0),
+        cost_usd={"stt": 0.0, "extract": 0.0},
+    )
+    assert "Speaker A @ 0:17" in note
+
+
 def test_render_note_hour_plus_timestamp() -> None:
     meta, extraction = _fixture()
     extraction = extraction.model_copy(
