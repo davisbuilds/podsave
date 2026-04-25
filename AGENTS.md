@@ -2,22 +2,17 @@
 
 Guidance for coding agents working in this repository.
 
-`podsave` turns YouTube videos into curated Obsidian notes. Pipeline: yt-dlp download → AssemblyAI diarized STT (`universal-3-pro`) → OpenAI structured extraction (`gpt-5.4-mini`, up to 10 insights/quotes/spicy-takes) → Obsidian-flavored markdown note to `~/obsd/Resources/Podsave/`.
+`podsave` is a single-user CLI that turns a YouTube URL into a curated Obsidian note. Pipeline:
 
-See `docs/plans/2026-04-23-podsave-v1.md` for the full spec, build phases, and open questions.
+```
+yt-dlp audio → AssemblyAI diarized STT → OpenAI structured extraction → Obsidian markdown
+```
 
-## Current Phase Status
+For deeper context, read these in order:
 
-| Phase | Status | Notes |
-|-------|--------|-------|
-| P0 — scaffold | ✅ | Typer CLI, uv, ruff, pytest wired up |
-| P1 — init + config + storage | ✅ | `~/.podsave/` layout, config.toml, queue, JSONL log |
-| P2 — probe + `--dry-run` | ✅ | yt-dlp metadata probe, cost preview panel |
-| P3 — download + transcribe | ✅ | yt-dlp `-f bestaudio` (no ffmpeg), AssemblyAI `universal-3-pro` |
-| P4 — extract + render | ✅ | `gpt-5.4-mini` structured output, Obsidian callouts, versioned notes |
-| P5 — queue drain + retry | ✅ | `drain`, `retry <video_id>`, queue edit/remove/clear |
-| P6 — polish + docs | ✅ | Error audit, ARCHITECTURE/FEATURES/SPEC docs |
-| Dogfood | ✅ | 4 videos, $0.90; revealed + fixed monologue quote timestamp snap |
+- `docs/system/ARCHITECTURE.md` — layers, data flow, error model, external state
+- `docs/system/FEATURES.md` — every user-facing command and behavior
+- `docs/project/SPEC.md` — what's in scope and what's deliberately not
 
 ## Project Structure
 
@@ -26,7 +21,7 @@ podsave/
 ├── podsave                 # Repo-local launcher (./podsave <cmd>)
 ├── queue.txt               # Symlink to ~/.podsave/queue.txt (gitignored)
 ├── src/
-│   ├── cli.py              # Typer CLI entry point
+│   ├── cli.py              # Typer CLI; wires pipeline stages
 │   ├── errors.py           # PodsaveError hierarchy
 │   ├── models.py           # Shared Pydantic data models
 │   ├── pipeline/
@@ -34,16 +29,11 @@ podsave/
 │   │   ├── transcribe.py   # AssemblyAI wrapper
 │   │   ├── extract.py      # OpenAI structured-output extraction
 │   │   ├── render.py       # Obsidian markdown rendering
-│   │   └── prompts/
-│   │       └── extract_v1.md
+│   │   └── prompts/extract_v1.md
 │   ├── storage/            # config, queue, transcripts, log, paths
 │   └── utils/              # youtube URL parsing, filenames, cost math
-├── tests/                  # Pytest suite (93 tests + 1 opt-in integration)
-├── docs/
-│   ├── plans/              # Implementation plans
-│   ├── system/             # Architecture, features (P6)
-│   └── project/            # Spec (P6)
-└── pyproject.toml
+├── tests/                  # Pytest suite + opt-in integration
+└── docs/{system,project,plans}/
 ```
 
 ## Key Commands
@@ -54,29 +44,29 @@ The project uses `uv` for dependency management.
 - **Tests**: `uv run pytest -q`
 - **Lint**: `uv run ruff check .`
 - **Install**: `uv sync --extra dev`
-- **Integration tests** (real APIs): `PODSAVE_INTEGRATION=1 uv run pytest -q`
+- **Integration tests** (real APIs, costs money): `PODSAVE_INTEGRATION=1 uv run pytest -q`
 
 ## External State
 
-The CLI writes to paths outside the repo. Know these exist:
+The CLI writes to paths outside the repo. These are not visible from `git status`:
 
 - `~/.podsave/config.toml` — API keys, vault path, extraction model
 - `~/.podsave/queue.txt` — URL queue (symlinked into repo root on `init`)
 - `~/.podsave/transcripts/<video_id>.json` + `.meta.json` — STT cache (reused on re-runs)
 - `~/.podsave/processed.jsonl` — append-only run log, cost-per-stage
-- `~/.podsave/tmp/` — transient audio download, cleaned after transcription
-- `~/obsd/Resources/Podsave/` — Obsidian vault output (user-configurable)
+- `~/.podsave/tmp/` — transient audio, cleaned in a `finally` block after transcription
+- `~/obsd/Resources/Podsave/` — Obsidian vault output (configurable)
 
-Tests isolate state via the `podsave_home` fixture (sets `$PODSAVE_HOME` to a `tmp_path`).
+Tests isolate this state via the `podsave_home` fixture (sets `$PODSAVE_HOME` to a `tmp_path`). `PODSAVE_OPENAI_API_KEY`, `PODSAVE_ASSEMBLYAI_API_KEY`, `PODSAVE_VAULT_PATH`, and `PODSAVE_EXTRACTION_MODEL` override the matching config fields.
 
 ## Project Boundaries
 
-- YouTube only for v1 (no RSS, Apple, Spotify, raw mp3s). Playlist URLs error cleanly, never silent-expand.
-- STT is AssemblyAI only in v1. OpenAI only for extraction. Both abstracted via thin wrappers for future providers — don't bolt on more until the second provider is actually needed.
-- No scheduled background runs, no web UI, no TUI in v1.
-- Re-processing a URL always bumps the version number (`(v2)`, `(v3)`, …) — never overwrite an existing note.
-- Duration guards: 15m floor / 4h ceiling, overridable with `--force`.
-- Default models: `universal-3-pro` (STT), `gpt-5.4-mini` (extraction). Costs hard-coded in `src/utils/cost.py`.
+- **YouTube only.** No RSS, Apple, Spotify, raw mp3s. Playlist URLs error cleanly — never silent-expand.
+- **One provider per stage.** AssemblyAI for STT, OpenAI for extraction. Both sit behind thin wrappers, but don't grow a provider abstraction until a real second provider exists.
+- **No background runs, no web UI, no TUI, no SQLite.** Plain files are enough for a single user.
+- **Re-processing bumps the version.** Same URL → ` (v2)`, ` (v3)`, … Never overwrite an existing note.
+- **Duration guards.** 15m floor / 4h ceiling, overridable with `--force`.
+- **Default models** are `universal-3-pro` (STT) and `gpt-5.4-mini` (extraction). Rates are hard-coded in `src/utils/cost.py`; update them there if pricing changes.
 
 ## Output Format
 
@@ -85,30 +75,23 @@ Notes use Obsidian-flavored markdown (see the `obsidian-markdown` skill):
 - YAML frontmatter with typed properties (`video_id`, `channel`, `url`, `published`, `duration`, `processed`, `version`, `model`, `prompt_version`, `cost_usd`) plus `tags: [podsave]`.
 - Items render as callouts: `> [!note]` for insights, `> [!quote]` for quotes (with `[Speaker @ MM:SS](url&t=Ns)` link), `> [!warning]` for spicy takes.
 - Filenames: `Channel — Title [YYYY-MM-DD].md`, NFC-normalized, path-unsafe chars stripped, 180-char cap. Versioning appends ` (v2)` etc.
+- Quote timestamps are snapped to word-level boundaries, not raw utterance starts — keeps long monologue quotes from linking to the speaker's first word minutes earlier.
 
 ## Coding Conventions
 
 Ruff is configured with import sorting and modern-Python upgrade rules (E/F/I/B/UP, line-length 100, target 3.14).
 
 - Use `from __future__ import annotations`.
-- Pydantic models in `src/models.py`; don't scatter data shapes across modules.
-- Pipeline stages should be pure-ish functions over data models; the CLI wires them.
-- Storage is plain files (TOML, JSONL, JSON). No SQLite in v1.
-- User-facing errors must name the file/command to fix them (`"ASSEMBLYAI_API_KEY not set in ~/.podsave/config.toml — run 'podsave init'"`). Wrap them in typed `PodsaveError` subclasses and let `@handle_errors` convert to exit-1.
+- Pydantic models live in `src/models.py`; don't scatter data shapes across modules.
+- Pipeline stages are pure-ish functions over data models. The CLI wires them; commands like `save`/`drain`/`retry` share `_process_url` and `_extract_render_and_log` helpers in `cli.py`.
+- Storage is plain files (TOML, JSONL, JSON).
+- User-facing errors must name the file or command to fix them (e.g. `"ASSEMBLYAI_API_KEY not set in ~/.podsave/config.toml — run 'podsave init'"`). Wrap them in typed `PodsaveError` subclasses; `@handle_errors` converts them to a clean exit-1. External exceptions (subprocess, AssemblyAI, OpenAI) must be caught at the pipeline boundary — raw tracebacks should never reach the user.
 - Prompts are versioned files in `src/pipeline/prompts/<name>_v<N>.md`. Bump the version when the prompt changes; `prompt_version` lands in the note frontmatter.
 
 ## Testing
 
-**Pre-push check**: Before pushing, run `uv run ruff check .` and `uv run pytest -q`.
+**Pre-push check**: run `uv run ruff check .` and `uv run pytest -q`.
 
-**TDD**: Red/green on anything data-shaped — models, filename sanitizer, versioning, queue/log, render output, cost math. Skip TDD for thin SDK wrappers (`download.download_audio`, `transcribe.transcribe`); mock-test them after.
+**TDD**: red/green on anything data-shaped — models, filename sanitizer, versioning, queue/log, render output, cost math. Skip TDD for thin SDK wrappers (`download.download_audio`, `transcribe.transcribe`); mock-test them after.
 
-**Integration tests** live behind `PODSAVE_INTEGRATION=1` (they hit real YouTube + real APIs). Run manually before shipping each phase; not in pre-push.
-
-## Git
-
-Single-branch `main`. Ship each phase as its own commit with a descriptive message (see recent `git log` for style). Update the plan doc's status table in the same commit that ships a phase.
-
-## Build Phases
-
-The plan at `docs/plans/2026-04-23-podsave-v1.md` defines six phases. Ship each phase and feel it before moving on. Don't batch.
+**Integration tests** live behind `PODSAVE_INTEGRATION=1` (they hit real YouTube + real APIs and cost real money). Run manually before shipping non-trivial pipeline changes; not part of pre-push.
