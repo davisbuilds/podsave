@@ -34,7 +34,7 @@ wheels = [
 
 [[package]]
 name = "assemblyai"
-version = "0.62.0"
+version = "0.63.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -43,9 +43,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6a/7d/0486d56b1bdb784f1fe92402792134604d57c600ea63b2936b37c65821f1/assemblyai-0.62.0.tar.gz", hash = "sha256:c96eb468c68fc3789a547ddd8690fca846f5466cf0cf0d67d520d4c8bf973ba3", size = 58148, upload-time = "2026-04-17T18:14:01.523Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/03/b17837f7f3a73fae8d7b06e268424e4574a0202a7a0311aa0ad16c7a2344/assemblyai-0.63.0.tar.gz", hash = "sha256:e57af55661ce129a0c2d5382a2592d699624cdb5645092d66e0dfe8a78b589f8", size = 58490, upload-time = "2026-04-24T15:40:07.175Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/da/a12f17b9ee7b4a2ac99821c44dc15cdb5e8251e071bead1679a8e3c878aa/assemblyai-0.62.0-py3-none-any.whl", hash = "sha256:e2fdaf0cc189733eb308b659576c9f2443831018f83a3751be04e1c751f0c274", size = 54803, upload-time = "2026-04-17T18:14:00.429Z" },
+    { url = "https://files.pythonhosted.org/packages/12/d4/01fc844e56576eeb20d303cf4cbf99a89839803ca3893bec8127d12a2f23/assemblyai-0.63.0-py3-none-any.whl", hash = "sha256:64aaf32027bd539529f8e9e7d78979ca5da0a1ec3567c149aa34f62d457f430c", size = 55142, upload-time = "2026-04-24T15:40:06.041Z" },
 ]
 
 [[package]]
@@ -200,7 +200,7 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "1.109.1"
+version = "2.32.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -212,9 +212,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c6/a1/a303104dc55fc546a3f6914c842d3da471c64eec92043aef8f652eb6c524/openai-1.109.1.tar.gz", hash = "sha256:d173ed8dbca665892a6db099b4a2dfac624f94d20a93f46eb0b56aae940ed869", size = 564133, upload-time = "2025-09-24T13:00:53.075Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ed/59/bdcc6b759b8c42dd73afaf5bf8f902c04b37987a5514dbc1c64dba390fef/openai-2.32.0.tar.gz", hash = "sha256:c54b27a9e4cb8d51f0dd94972ffd1a04437efeb259a9e60d8922b8bd26fe55e0", size = 693286, upload-time = "2026-04-15T22:28:19.434Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1d/2a/7dd3d207ec669cacc1f186fd856a0f61dbc255d24f6fdc1a6715d6051b0f/openai-1.109.1-py3-none-any.whl", hash = "sha256:6bcaf57086cf59159b8e27447e4e7dd019db5d29a438072fbd49c290c7e65315", size = 948627, upload-time = "2025-09-24T13:00:50.754Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/c1/d6e64ccd0536bf616556f0cad2b6d94a8125f508d25cfd814b1d2db4e2f1/openai-2.32.0-py3-none-any.whl", hash = "sha256:4dcc9badeb4bf54ad0d187453742f290226d30150890b7890711bda4f32f192f", size = 1162570, upload-time = "2026-04-15T22:28:17.714Z" },
 ]
 
 [[package]]
@@ -256,14 +256,14 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "assemblyai", specifier = ">=0.37.0,<1.0.0" },
-    { name = "openai", specifier = ">=1.50.0,<2.0.0" },
-    { name = "pydantic", specifier = ">=2.11.0,<3.0.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0,<9.0.0" },
-    { name = "rich", specifier = ">=14.0.0,<15.0.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.12.0,<1.0.0" },
-    { name = "typer", specifier = ">=0.17.0,<1.0.0" },
-    { name = "yt-dlp", specifier = ">=2026.1.0" },
+    { name = "assemblyai", specifier = ">=0.63.0,<1.0.0" },
+    { name = "openai", specifier = ">=2.32.0,<3.0.0" },
+    { name = "pydantic", specifier = ">=2.13.0,<3.0.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.0,<10.0.0" },
+    { name = "rich", specifier = ">=15.0.0,<16.0.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.15.0,<1.0.0" },
+    { name = "typer", specifier = ">=0.24.0,<1.0.0" },
+    { name = "yt-dlp", specifier = ">=2026.3.0" },
 ]
 provides-extras = ["dev"]
 
@@ -348,7 +348,7 @@ wheels = [
 
 [[package]]
 name = "pytest"
-version = "8.4.2"
+version = "9.0.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -357,9 +357,9 @@ dependencies = [
     { name = "pluggy" },
     { name = "pygments" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a3/5c/00a0e072241553e1a7496d638deababa67c5058571567b92a7eaa258397c/pytest-8.4.2.tar.gz", hash = "sha256:86c0d0b93306b961d58d62a4db4879f27fe25513d4b969df351abdddb3c30e01", size = 1519618, upload-time = "2025-09-04T14:34:22.711Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7d/0d/549bd94f1a0a402dc8cf64563a117c0f3765662e2e668477624baeec44d5/pytest-9.0.3.tar.gz", hash = "sha256:b86ada508af81d19edeb213c681b1d48246c1a91d304c6c81a427674c17eb91c", size = 1572165, upload-time = "2026-04-07T17:16:18.027Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a8/a4/20da314d277121d6534b3a980b29035dcd51e6744bd79075a6ce8fa4eb8d/pytest-8.4.2-py3-none-any.whl", hash = "sha256:872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79", size = 365750, upload-time = "2025-09-04T14:34:20.226Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/24/a372aaf5c9b7208e7112038812994107bc65a84cd00e0354a88c2c77a617/pytest-9.0.3-py3-none-any.whl", hash = "sha256:2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9", size = 375249, upload-time = "2026-04-07T17:16:16.13Z" },
 ]
 
 [[package]]
@@ -373,15 +373,15 @@ wheels = [
 
 [[package]]
 name = "rich"
-version = "14.3.4"
+version = "15.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown-it-py" },
     { name = "pygments" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e9/67/cae617f1351490c25a4b8ac3b8b63a4dda609295d8222bad12242dfdc629/rich-14.3.4.tar.gz", hash = "sha256:817e02727f2b25b40ef56f5aa2217f400c8489f79ca8f46ea2b70dd5e14558a9", size = 230524, upload-time = "2026-04-11T02:57:45.419Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c0/8f/0722ca900cc807c13a6a0c696dacf35430f72e0ec571c4275d2371fca3e9/rich-15.0.0.tar.gz", hash = "sha256:edd07a4824c6b40189fb7ac9bc4c52536e9780fbbfbddf6f1e2502c31b068c36", size = 230680, upload-time = "2026-04-12T08:24:00.75Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b3/76/6d163cfac87b632216f71879e6b2cf17163f773ff59c00b5ff4900a80fa3/rich-14.3.4-py3-none-any.whl", hash = "sha256:07e7adb4690f68864777b1450859253bed81a99a31ac321ac1817b2313558952", size = 310480, upload-time = "2026-04-11T02:57:47.484Z" },
+    { url = "https://files.pythonhosted.org/packages/82/3b/64d4899d73f91ba49a8c18a8ff3f0ea8f1c1d75481760df8c68ef5235bf5/rich-15.0.0-py3-none-any.whl", hash = "sha256:33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb", size = 310654, upload-time = "2026-04-12T08:24:02.83Z" },
 ]
 
 [[package]]
