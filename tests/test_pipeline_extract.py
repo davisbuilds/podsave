@@ -86,12 +86,9 @@ def test_extract_parses_openai_response(monkeypatch: pytest.MonkeyPatch) -> None
     class _FakeChat:
         completions = _FakeCompletions()
 
-    class _FakeBeta:
-        chat = _FakeChat()
-
     class _FakeClient:
         def __init__(self, *args: Any, **kwargs: Any) -> None:
-            self.beta = _FakeBeta()
+            self.chat = _FakeChat()
 
     monkeypatch.setattr(extract, "OpenAI", _FakeClient)
 
@@ -195,20 +192,14 @@ def test_extract_rejects_unknown_kind(monkeypatch: pytest.MonkeyPatch) -> None:
 
     class _FakeClient:
         def __init__(self, *a: Any, **kw: Any) -> None:
-            self.beta = type(
-                "_B",
+            self.chat = type(
+                "_C",
                 (),
                 {
-                    "chat": type(
-                        "_C",
+                    "completions": type(
+                        "_Comp",
                         (),
-                        {
-                            "completions": type(
-                                "_Comp",
-                                (),
-                                {"parse": staticmethod(lambda *a, **kw: _Completion())},
-                            )
-                        },
+                        {"parse": staticmethod(lambda *a, **kw: _Completion())},
                     )
                 },
             )()

@@ -84,7 +84,7 @@ def extract(
     )
 
     try:
-        completion = client.beta.chat.completions.parse(
+        completion = client.chat.completions.parse(
             model=model,
             messages=[
                 {"role": "system", "content": _system_prompt()},
