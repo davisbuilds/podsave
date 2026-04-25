@@ -262,6 +262,7 @@ def _extract_render_and_log(
             cost_usd=cost_usd,
             duration_sec=meta.duration_sec,
             status="complete",
+            channel=meta.channel,
         )
     )
     console.print(f"[dim]total spent on this run: ${sum(cost_usd.values()):.2f}[/dim]")
@@ -384,6 +385,7 @@ def drain(
 
     for i, url in enumerate(urls, start=1):
         console.rule(f"[bold]{i}/{len(urls)}[/bold] {url}")
+        meta: VideoMeta | None = None
         try:
             meta = download.probe(url)
             estimate = cost_utils.estimate(meta.duration_sec)
@@ -396,11 +398,13 @@ def drain(
             log_store.append(
                 RunRecord(
                     url=url,
-                    video_id="",
+                    video_id=meta.video_id if meta else "",
                     processed_at=datetime.now(),
                     version=1,
                     status="failed",
                     error=str(exc),
+                    channel=meta.channel if meta else None,
+                    duration_sec=meta.duration_sec if meta else None,
                 )
             )
 
@@ -410,6 +414,53 @@ def drain(
     if failures:
         for u, err in failures:
             console.print(f"  [dim]· {u}: {err}[/dim]")
+
+
+@app.command()
+def stats() -> None:
+    """Print lifetime usage: notes, failed runs, hours saved, total spend, top channels."""
+    records = log_store.read_all()
+    if not records:
+        typer.echo("no runs yet — try `podsave save <url>`")
+        return
+
+    completes = [r for r in records if r.status == "complete"]
+    failures = [r for r in records if r.status == "failed"]
+    v1_count = sum(1 for r in completes if r.version == 1)
+    retry_count = len(completes) - v1_count
+    hours = sum((r.duration_sec or 0) for r in completes) / 3600.0
+    total_spend = sum(sum(r.cost_usd.values()) for r in records)
+    avg_per_hour = (total_spend / hours) if hours > 0 else None
+
+    console = Console()
+
+    summary = Table.grid(padding=(0, 2))
+    summary.add_column(style="bold cyan")
+    summary.add_column(justify="right")
+    summary.add_row("Notes", f"{len(completes)}  ({v1_count} v1, {retry_count} retries)")
+    summary.add_row("Failed runs", str(len(failures)))
+    summary.add_row("Hours saved", f"{hours:.1f}h of audio")
+    summary.add_row("Total spend", f"${total_spend:.2f}")
+    if avg_per_hour is not None:
+        summary.add_row("Avg / hour", f"${avg_per_hour:.2f}")
+    console.print(Panel(summary, title="Lifetime", border_style="cyan"))
+
+    by_channel: dict[str, dict[str, float]] = {}
+    for r in completes:
+        key = r.channel or "(unknown)"
+        bucket = by_channel.setdefault(key, {"count": 0.0, "spend": 0.0})
+        bucket["count"] += 1
+        bucket["spend"] += sum(r.cost_usd.values())
+
+    if by_channel:
+        ranked = sorted(by_channel.items(), key=lambda kv: (-kv[1]["count"], kv[0]))
+        channels = Table.grid(padding=(0, 2))
+        channels.add_column(style="bold")
+        channels.add_column(justify="right")
+        channels.add_column(justify="right", style="dim")
+        for name, b in ranked[:10]:
+            channels.add_row(name, str(int(b["count"])), f"${b['spend']:.2f}")
+        console.print(Panel(channels, title="Top channels", border_style="yellow"))
 
 
 @app.command()

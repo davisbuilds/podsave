@@ -74,3 +74,4 @@ class RunRecord(BaseModel):
     duration_sec: int | None = None
     status: RunStatus
     error: str | None = None
+    channel: str | None = None
