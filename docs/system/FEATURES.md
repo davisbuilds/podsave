@@ -35,6 +35,22 @@ Loads a cached transcript + meta for `video_id` and re-runs extract + render onl
 | `remove <url>` | Remove the first matching URL; exit-1 if not found |
 | `clear [--yes]` | Empty the queue; confirms interactively unless `--yes` |
 
+### `podsave stats`
+
+Lifetime usage summary read from `processed.jsonl`: completed-note count (split into v1 vs retries), failed-run count, hours of audio processed, total spend, average cost per hour, and a top-channels table by note count + spend. Returns "no runs yet" if the log is empty.
+
+Channel attribution comes from `RunRecord.channel`, which is recorded on every new run. Older log lines without that field bucket under `(unknown)`.
+
+### `podsave doctor [--clean]`
+
+Inspects `~/.podsave/` for housekeeping issues:
+
+- **Tmp orphans**: leftover audio in `~/.podsave/tmp/` (filename + size). With `--clean`, these are deleted.
+- **Cached transcripts without a complete run**: `<video_id>` + cached title — hint to `podsave retry <video_id>`.
+- **Config sanity**: missing or placeholder API keys, vault path that doesn't yet exist.
+
+Read-only by default. `--clean` only ever touches files in `~/.podsave/tmp/` — never deletes transcripts (use `podsave retry` to re-extract from them, or delete the JSON manually to force re-transcription).
+
 ### `podsave hello` / `podsave version`
 
 Smoke commands. `hello` proves the CLI is wired up. `version` prints the installed package version from `importlib.metadata`.
@@ -75,12 +91,13 @@ tags:
   - `spicy_take` → `> [!warning]`
 - Each callout body is the item text; an optional `*italic*` context line underneath explains *why* it matters.
 - Footer: `*N item(s) extracted by <model> (prompt <version>).*`
+- **Speaker names**: the extraction model resolves the `A/B/C` letters to real names from intros, addresses, and sign-offs in the transcript. Quote titles render the resolved name (`[Andrew Huberman @ MM:SS]`); a low-confidence guess gets a `(?)` suffix; falls back to `Speaker A` when no match is found. Speaker map lives on `ExtractionResult.speakers`, not in frontmatter.
 
 ## Guards and limits
 
 - **Duration**: 15m floor, 4h ceiling. Override with `--force`.
 - **Playlists**: rejected in `utils/youtube.is_playlist` before yt-dlp runs.
-- **File names**: NFC-normalized, path-unsafe chars stripped (`\/:*?"<>|` + control), whitespace collapsed, 180-char cap.
+- **File names**: NFC-normalized, path-unsafe chars stripped (`\/:*?"<>|` + control), whitespace collapsed, 180-char cap. If the title ends with ` | <Channel>`, ` — <Channel>`, or ` - <Channel>` (case-insensitive), that suffix is dropped so the channel doesn't appear twice in the filename. The frontmatter `title` keeps the original verbatim.
 - **Transcript cache**: never expires automatically; delete the JSON to force re-transcription.
 
 ## Cost awareness
@@ -92,7 +109,6 @@ tags:
 ## What's NOT supported in v1
 
 - Providers other than YouTube + AssemblyAI + OpenAI
-- Speaker name resolution (labels stay as `A`, `B`, …)
 - Background scheduling or watching
 - Web UI, TUI, or plugin
 - Mid-run resume (if download succeeds but transcribe fails, you re-download)
