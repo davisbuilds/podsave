@@ -17,6 +17,11 @@ from rich.table import Table
 from src.errors import EmptyExtractionError, PodsaveError, TranscriptNotFoundError
 from src.models import CostEstimate, ExtractionResult, RunRecord, VideoMeta
 from src.pipeline import download, extract, render, transcribe
+from src.search import filters as search_filters
+from src.search import index as search_index
+from src.search import ranker as search_ranker
+from src.search import render as search_render
+from src.search.matcher import GrepMatcher
 from src.storage import config as config_store
 from src.storage import log as log_store
 from src.storage import paths
@@ -627,6 +632,72 @@ def retry(
         console=console,
         focus=focus,
     )
+
+
+@app.command()
+@handle_errors
+def search(
+    query: str = typer.Argument("", help="Substring(s) to find in callouts. AND-of-tokens."),
+    kind: str | None = typer.Option(
+        None, "--kind", help="Limit to one callout kind: quote | insight | spicy_take."
+    ),
+    channel: str | None = typer.Option(
+        None, "--channel", help="Substring match (case-insensitive) on note channel."
+    ),
+    focus: str | None = typer.Option(
+        None, "--focus", help="Only notes whose focus slug matches this string."
+    ),
+    since: str | None = typer.Option(
+        None, "--since", help="Filter by published date: YYYY-MM-DD or relative (e.g. 30d, 6m, 1y)."
+    ),
+    limit: int = typer.Option(20, "--limit", help="Cap result count. 0 = unlimited."),
+    write: bool = typer.Option(
+        False, "--write", help="Also write a results note to <vault>/Callouts/."
+    ),
+) -> None:
+    """Search callouts across the vault. Output to terminal; optionally to a vault note."""
+    cfg = config_store.load_config()
+    vault = cfg.vault_path
+    if not vault.exists():
+        raise PodsaveError(
+            f"vault path missing: {vault} — check ~/.podsave/config.toml or run `podsave init`"
+        )
+
+    notes = search_index.walk_vault(vault)
+    notes_searched = len(notes)
+    filtered = search_filters.apply(
+        notes, kind=kind, channel=channel, focus=focus, since=since
+    )
+
+    matcher = GrepMatcher()
+    pairs: list[tuple[Any, Any]] = []
+    for note in filtered:
+        for match in matcher.find(query, note.callouts):
+            pairs.append((match, note))
+    ranked = search_ranker.rank(pairs, limit=limit)
+
+    console = Console()
+    summary = _filter_summary(kind=kind, channel=channel, focus=focus, since=since)
+    search_render.render_terminal(console, ranked, query=query, filter_summary=summary)
+
+    if write:
+        if not ranked:
+            console.print("[yellow]nothing to write — skipping --write[/yellow]")
+            return
+        out_path = search_render.render_vault_note(
+            vault,
+            ranked,
+            query=query,
+            notes_searched=notes_searched,
+            filters={"kind": kind, "channel": channel, "focus": focus, "since": since},
+            generated_at=datetime.now(),
+        )
+        console.print(f"[green]wrote[/green] {out_path}")
+
+
+def _filter_summary(**flags: object) -> str | None:
+    parts = [f"{k}={v}" for k, v in flags.items() if v is not None]
+    return ", ".join(parts) if parts else None
 
 
 def main() -> None:
