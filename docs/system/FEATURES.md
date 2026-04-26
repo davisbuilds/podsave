@@ -54,6 +54,22 @@ Inspects `~/.podsave/` for housekeeping issues:
 
 Read-only by default. `--clean` only ever touches files in `~/.podsave/tmp/` — never deletes transcripts (use `podsave retry` to re-extract from them, or delete the JSON manually to force re-transcription).
 
+### `podsave search QUERY [--kind ...] [--channel ...] [--focus ...] [--since ...] [--limit N] [--write]`
+
+Search every callout in every podsave-tagged note in the vault. Substring/AND-of-tokens, case-insensitive; matches `text` and `context`. Results print as Rich panels in the terminal, ranked by hit count with note recency as tiebreak.
+
+Filters compose AND-style:
+
+- `--kind quote|insight|spicy_take` — restrict to one callout type.
+- `--channel TEXT` — case-insensitive substring on note channel.
+- `--focus TEXT` — exact slug match on the note's `focus:` field.
+- `--since DATE` — `YYYY-MM-DD` or relative (`30d`, `6m`, `1y`); filters by video publish date.
+- `--limit N` — cap result count, default 20; `0` = unlimited.
+
+`--write` re-renders the same matches into `<vault>/Callouts/Search — <slug> [YYYY-MM-DD].md` using real Obsidian callout syntax with `[[wikilinks]]` back to source notes. The note is tagged `podsave/search` so all written results group in Obsidian's tag pane.
+
+Empty query (`""`) is allowed when at least one filter is set — useful with `--write` to compile every callout from a channel/focus/period into one note. With no query and no filters, every callout in the vault is returned.
+
 ### `podsave hello` / `podsave version`
 
 Smoke commands. `hello` proves the CLI is wired up. `version` prints the installed package version from `importlib.metadata`.

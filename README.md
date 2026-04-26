@@ -10,7 +10,7 @@ Transcripts cache locally, so re-processing a video is cheap (it only pays the e
 
 ## Status
 
-v1 in progress. Phases 0–4 shipped; queue drain + retry (P5) is next. See `docs/plans/2026-04-23-podsave-v1.md`.
+v1 (full pipeline), v1.1 (stats / doctor / speaker resolution / filename dedup), v1.2 (focused extraction via `--focus`), and v2.0 (vault search) all shipped. See `docs/plans/`.
 
 ## Install
 
@@ -35,6 +35,13 @@ Vault defaults to `~/obsd/Resources/Podsave/`; override in `~/.podsave/config.to
 
 # Process for real: download → transcribe → extract → write note
 ./podsave save "https://www.youtube.com/watch?v=QVJcdfkRpH8"
+
+# Re-extract a cached transcript through a focus lens (cheap — no STT)
+./podsave retry QVJcdfkRpH8 --focus "career advice"
+
+# Search every callout across the vault; --write drops a results note into <vault>/Callouts/
+./podsave search "memory consolidation" --kind quote
+./podsave search "agency" --channel Anthropic --since 90d --write
 
 # Queue management
 ./podsave queue add "https://youtu.be/..."
