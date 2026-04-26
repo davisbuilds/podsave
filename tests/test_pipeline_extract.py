@@ -222,6 +222,100 @@ def test_extract_returns_speaker_map(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.prompt_version == "v2"
 
 
+def _install_fake_openai(
+    monkeypatch: pytest.MonkeyPatch,
+    payload: extract._ExtractionPayload,
+) -> dict[str, Any]:
+    """Install a fake OpenAI client that records the kwargs of each parse() call."""
+    captured: dict[str, Any] = {}
+
+    class _Usage:
+        prompt_tokens = 1
+        completion_tokens = 1
+
+    class _Message:
+        parsed = payload
+
+    class _Choice:
+        message = _Message()
+
+    class _Completion:
+        choices = [_Choice()]
+        usage = _Usage()
+
+    def _parse(*args: Any, **kwargs: Any) -> _Completion:
+        captured.update(kwargs)
+        return _Completion()
+
+    class _FakeClient:
+        def __init__(self, *a: Any, **kw: Any) -> None:
+            self.chat = type(
+                "_C",
+                (),
+                {"completions": type("_Comp", (), {"parse": staticmethod(_parse)})},
+            )()
+
+    monkeypatch.setattr(extract, "OpenAI", _FakeClient)
+    return captured
+
+
+def test_extract_appends_focus_addendum_to_system_prompt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = extract._ExtractionPayload(
+        items=[extract._ExtractedItem(kind="insight", text="x", rank=1)]
+    )
+    captured = _install_fake_openai(monkeypatch, payload)
+    raw = {"utterances": [{"speaker": "A", "start": 0, "text": "Hi."}]}
+
+    extract.extract(raw, _meta(), api_key="k", model="m", focus="career advice")
+
+    system_msg = captured["messages"][0]["content"]
+    assert "career advice" in system_msg
+    assert "focus this extraction on" in system_msg.lower()
+
+
+def test_extract_omits_focus_addendum_when_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    payload = extract._ExtractionPayload(
+        items=[extract._ExtractedItem(kind="insight", text="x", rank=1)]
+    )
+    captured = _install_fake_openai(monkeypatch, payload)
+    raw = {"utterances": [{"speaker": "A", "start": 0, "text": "Hi."}]}
+
+    extract.extract(raw, _meta(), api_key="k", model="m")
+
+    system_msg = captured["messages"][0]["content"]
+    assert "focus this extraction on" not in system_msg.lower()
+
+
+def test_extract_records_focus_on_result(monkeypatch: pytest.MonkeyPatch) -> None:
+    payload = extract._ExtractionPayload(
+        items=[extract._ExtractedItem(kind="insight", text="x", rank=1)]
+    )
+    _install_fake_openai(monkeypatch, payload)
+    raw = {"utterances": [{"speaker": "A", "start": 0, "text": "Hi."}]}
+
+    result = extract.extract(raw, _meta(), api_key="k", model="m", focus="career advice")
+    assert result.focus == "career advice"
+
+    result_unfocused = extract.extract(raw, _meta(), api_key="k", model="m")
+    assert result_unfocused.focus is None
+
+
+def test_extract_returns_empty_items_when_focus_unmatched(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Model decided no items match the focus → returns items=[]. extract must NOT raise;
+    # zero items is a valid model response. CLI handles the empty case.
+    payload = extract._ExtractionPayload(items=[])
+    _install_fake_openai(monkeypatch, payload)
+    raw = {"utterances": [{"speaker": "A", "start": 0, "text": "Hi."}]}
+
+    result = extract.extract(raw, _meta(), api_key="k", model="m", focus="quantum biology")
+    assert result.items == []
+    assert result.focus == "quantum biology"
+
+
 def test_extract_rejects_unknown_kind(monkeypatch: pytest.MonkeyPatch) -> None:
     raw_transcript = {"utterances": [{"speaker": "A", "start": 0, "text": "x"}]}
 

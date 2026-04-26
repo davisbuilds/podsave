@@ -42,3 +42,12 @@ class DownloadError(PodsaveError):
 
 class TranscriptionError(PodsaveError):
     pass
+
+
+class EmptyExtractionError(PodsaveError):
+    """Raised by the CLI when extraction returns zero items.
+
+    The model is allowed to return zero items (especially under a tight `--focus`).
+    The CLI surfaces it as a clean exit-1 with an actionable message rather than
+    writing an empty-body note to the vault.
+    """

@@ -45,8 +45,20 @@ class ExtractionError(PodsaveError):
     pass
 
 
-def _system_prompt() -> str:
-    return _PROMPT_PATH.read_text()
+def _system_prompt(focus: str | None = None) -> str:
+    base = _PROMPT_PATH.read_text()
+    if not focus:
+        return base
+    addendum = (
+        "\n## Focus\n\n"
+        f"Additionally, the user has asked you to focus this extraction on: **{focus}**.\n\n"
+        "Apply your normal quality bar (verbatim quotes, non-obvious insights, no padding) "
+        "— but only return items that are clearly relevant to this focus. "
+        "If the video does not meaningfully address this focus, return zero items "
+        "rather than padding with off-topic picks.\n\n"
+        "Speaker resolution still applies regardless of focus.\n"
+    )
+    return base + addendum
 
 
 def _format_utterances(raw: dict[str, Any]) -> str:
@@ -70,10 +82,14 @@ def extract(
     *,
     api_key: str,
     model: str,
+    focus: str | None = None,
 ) -> ExtractionResult:
     """Call OpenAI with the extraction prompt and the formatted transcript.
 
-    Returns an ExtractionResult. Raises ExtractionError on API/parse failure.
+    When `focus` is set (non-empty), the system prompt is extended with a focus
+    addendum and the value is recorded on the result. Returns an ExtractionResult.
+    Zero items is a valid response (the CLI handles refusal). Raises ExtractionError
+    on API/parse failure only.
     """
     client = OpenAI(api_key=api_key)
     utterances_text = _format_utterances(raw_transcript)
@@ -81,6 +97,10 @@ def extract(
         raise ExtractionError(
             f"transcript for {meta.video_id} has no utterances or text to extract from"
         )
+
+    focus_value = focus.strip() if focus else None
+    if not focus_value:
+        focus_value = None
 
     user_message = (
         f"Video: {meta.title}\n"
@@ -94,7 +114,7 @@ def extract(
         completion = client.chat.completions.parse(
             model=model,
             messages=[
-                {"role": "system", "content": _system_prompt()},
+                {"role": "system", "content": _system_prompt(focus_value)},
                 {"role": "user", "content": user_message},
             ],
             response_format=_ExtractionPayload,
@@ -123,6 +143,7 @@ def extract(
         input_tokens=(usage.prompt_tokens if usage else 0),
         output_tokens=(usage.completion_tokens if usage else 0),
         speakers=speakers,
+        focus=focus_value,
     )
 
 

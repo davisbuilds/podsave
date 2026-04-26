@@ -82,3 +82,4 @@ class RunRecord(BaseModel):
     status: RunStatus
     error: str | None = None
     channel: str | None = None
+    focus: str | None = None
