@@ -8,22 +8,25 @@ What `podsave` does today, keyed to the CLI surface.
 
 Creates `~/.podsave/` with `config.toml`, `queue.txt`, `processed.jsonl`, `transcripts/`, `tmp/`. In interactive mode prompts for OpenAI and AssemblyAI keys (hidden input). With `--no-prompt`, writes `REPLACE_ME` placeholders. When run from inside the project directory, also symlinks `./queue.txt → ~/.podsave/queue.txt` so the queue is editable in the project's editor.
 
-### `podsave save <url> [--dry-run] [--force]`
+### `podsave save <url> [--dry-run] [--force] [--focus TEXT]`
 
 Processes one YouTube URL end-to-end.
 
 - **`--dry-run`**: prints a panel with video metadata and an estimated cost breakdown (AssemblyAI `$X @ $/hr`, OpenAI `~N tokens @ $/M`). Does not touch the network beyond the metadata probe; no spend.
 - **default**: probe → guard duration → (download + transcribe | cached transcript) → extract → render → write note to vault → append log entry. Prints per-stage status with rich; ends with total spend for the run.
 - **`--force`**: bypasses the 15m floor / 4h ceiling duration guard.
+- **`--focus TEXT`**: narrows extraction to items relevant to a free-form lens (e.g. `--focus "career advice"`). The note lands as a separate file with `(focus: <slug>)` in the basename and `podsave/<slug>` as a sub-tag, so different lenses on the same video coexist. If the model returns zero items, the CLI refuses to write a note (exits 1, logs a `failed` RunRecord). Empty/whitespace focus is treated as no focus.
 - Playlist URLs are rejected before any network call with a `PlaylistURLError`.
 
 ### `podsave drain [--force]`
 
 Loops over every URL in the queue in order. On success removes the URL; on failure leaves it and logs a `status="failed"` `RunRecord` with the error string. Continues past failures. Prints a final summary with success/fail counts and per-URL error detail. Doesn't retry failed entries automatically — a second `drain` will.
 
-### `podsave retry <video_id>`
+### `podsave retry <video_id> [--focus TEXT]`
 
 Loads a cached transcript + meta for `video_id` and re-runs extract + render only. No download, no STT spend — only OpenAI tokens. The new note lands as `(v2)`, `(v3)`, etc. alongside the existing versions. Errors cleanly if no transcript is cached.
+
+Supports `--focus TEXT` with the same semantics as `save --focus`: the focused note lands as its own file (`(focus: <slug>)` basename + `podsave/<slug>` sub-tag) and versions independently from broad and other-focus runs of the same video.
 
 ### `podsave queue …`
 
@@ -81,6 +84,8 @@ tags:
 ---
 ```
 
+When the run was focused, two extra elements appear: a `focus: "<raw text>"` line in the frontmatter (just above `tags:`) and a `podsave/<slug>` sub-tag alongside `podsave`. Broad runs are unchanged.
+
 ### Body
 
 - Short header line with channel, publish date, duration, and a "Watch on YouTube" link.
@@ -97,7 +102,7 @@ tags:
 
 - **Duration**: 15m floor, 4h ceiling. Override with `--force`.
 - **Playlists**: rejected in `utils/youtube.is_playlist` before yt-dlp runs.
-- **File names**: NFC-normalized, path-unsafe chars stripped (`\/:*?"<>|` + control), whitespace collapsed, 180-char cap. If the title ends with ` | <Channel>`, ` — <Channel>`, or ` - <Channel>` (case-insensitive), that suffix is dropped so the channel doesn't appear twice in the filename. The frontmatter `title` keeps the original verbatim.
+- **File names**: NFC-normalized, path-unsafe chars stripped (`\/:*?"<>|` + control), whitespace collapsed, 180-char cap. If the title ends with ` | <Channel>`, ` — <Channel>`, or ` - <Channel>` (case-insensitive), that suffix is dropped so the channel doesn't appear twice in the filename. The frontmatter `title` keeps the original verbatim. When `--focus` is set, ` (focus: <slug>)` is appended to the basename so different lenses on the same video are visually distinct.
 - **Transcript cache**: never expires automatically; delete the JSON to force re-transcription.
 
 ## Cost awareness
