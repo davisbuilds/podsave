@@ -14,7 +14,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from src.errors import PodsaveError, TranscriptNotFoundError
+from src.errors import EmptyExtractionError, PodsaveError, TranscriptNotFoundError
 from src.models import CostEstimate, ExtractionResult, RunRecord, VideoMeta
 from src.pipeline import download, extract, render, transcribe
 from src.storage import config as config_store
@@ -158,6 +158,11 @@ def save(
         "--force",
         help="Bypass the 15m/4h duration guards.",
     ),
+    focus: str | None = typer.Option(
+        None,
+        "--focus",
+        help="Narrow extraction to items relevant to this lens (e.g. 'career advice').",
+    ),
 ) -> None:
     """Process a single YouTube URL (use --dry-run to preview cost only)."""
     meta = download.probe(url)
@@ -167,7 +172,7 @@ def save(
         _render_preview(meta, estimate)
         return
 
-    _process_url(meta, estimate=estimate, force=force, console=Console())
+    _process_url(meta, estimate=estimate, force=force, console=Console(), focus=focus)
 
 
 def _process_url(
@@ -176,6 +181,7 @@ def _process_url(
     estimate: CostEstimate,
     force: bool,
     console: Console,
+    focus: str | None = None,
 ) -> Path:
     """Full pipeline for a probed URL: guard → (download+STT|cache) → extract → render → log.
 
@@ -212,6 +218,7 @@ def _process_url(
         stt_cost=stt_cost,
         cfg=cfg,
         console=console,
+        focus=focus,
     )
 
 
@@ -222,14 +229,24 @@ def _extract_render_and_log(
     stt_cost: float,
     cfg: Any,
     console: Console,
+    focus: str | None = None,
 ) -> Path:
-    """Run extraction + render + append a RunRecord. Returns the note path."""
+    """Run extraction + render + append a RunRecord. Returns the note path.
+
+    When extraction returns zero items, no note is written; a `status="failed"`
+    RunRecord is appended and `EmptyExtractionError` is raised for the CLI to
+    surface as a clean exit-1.
+    """
+    focus = focus.strip() if focus else None
+    if not focus:
+        focus = None
     with console.status(f"[cyan]extracting[/cyan] top insights via {cfg.extraction_model}…"):
         extraction = extract.extract(
             raw_transcript,
             meta,
             api_key=cfg.openai_api_key,
             model=cfg.extraction_model,
+            focus=focus,
         )
     console.print(f"[green]extracted[/green] {len(extraction.items)} item(s)")
 
@@ -237,9 +254,35 @@ def _extract_render_and_log(
     processed_at = datetime.now()
     cost_usd = {"stt": round(stt_cost, 4), "extract": round(extract_cost, 4)}
 
+    if not extraction.items:
+        if extraction.focus:
+            msg = (
+                f"no items matched focus '{extraction.focus}' — try broader "
+                "phrasing or run without --focus"
+            )
+        else:
+            msg = f"extraction returned zero items for {meta.title}"
+        log_store.append(
+            RunRecord(
+                url=meta.url,
+                video_id=meta.video_id,
+                processed_at=processed_at,
+                version=1,
+                cost_usd=cost_usd,
+                duration_sec=meta.duration_sec,
+                status="failed",
+                error=msg,
+                channel=meta.channel,
+                focus=extraction.focus,
+            )
+        )
+        raise EmptyExtractionError(msg)
+
     vault = cfg.vault_path
     vault.mkdir(parents=True, exist_ok=True)
-    base_name = filenames.safe_name(meta.channel, meta.title, published=meta.published)
+    base_name = filenames.safe_name(
+        meta.channel, meta.title, published=meta.published, focus=extraction.focus
+    )
     note_path, version_num = filenames.next_version_path(vault, base_name)
     body = render.render_note(
         meta,
@@ -263,6 +306,7 @@ def _extract_render_and_log(
             duration_sec=meta.duration_sec,
             status="complete",
             channel=meta.channel,
+            focus=extraction.focus,
         )
     )
     console.print(f"[dim]total spent on this run: ${sum(cost_usd.values()):.2f}[/dim]")
@@ -558,6 +602,11 @@ def stats() -> None:
 @handle_errors
 def retry(
     video_id: str = typer.Argument(..., help="video_id with a cached transcript."),
+    focus: str | None = typer.Option(
+        None,
+        "--focus",
+        help="Narrow extraction to items relevant to this lens.",
+    ),
 ) -> None:
     """Re-run extraction + render from a cached transcript. No download/STT cost."""
     if not transcript_store.has(video_id):
@@ -576,6 +625,7 @@ def retry(
         stt_cost=0.0,
         cfg=cfg,
         console=console,
+        focus=focus,
     )
 
 
