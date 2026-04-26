@@ -10,15 +10,25 @@ from pathlib import Path
 _UNSAFE_CHARS = re.compile(r'[\\/:\*\?"<>\|\x00-\x1f]')
 _VERSION_SUFFIX = re.compile(r" \(v(\d+)\)$")
 _TRAILING_CHANNEL_SEPARATORS = ("|", "—", "-")
+_FOCUS_SLUG_NONALNUM = re.compile(r"[^a-z0-9]+")
+_FOCUS_SLUG_MAX = 40
 
 
-def safe_name(channel: str, title: str, *, published: date | None) -> str:
+def safe_name(
+    channel: str,
+    title: str,
+    *,
+    published: date | None,
+    focus: str | None = None,
+) -> str:
     """Return a readable, filesystem-safe basename (no extension): `Channel — Title [YYYY-MM-DD]`.
 
     Collapses runs of whitespace, strips path/control characters, trims to 180 chars so
     the whole basename stays well under macOS's 255-byte limit. If the title ends with
     a separator (`|`, `—`, ` - `) followed by the channel name, that suffix is removed
-    so the channel doesn't appear twice in the filename.
+    so the channel doesn't appear twice in the filename. When `focus` is set and slugifies
+    to a non-empty value, ` (focus: <slug>)` is appended so different lenses of the same
+    video are visually distinct in the vault.
     """
     title_no_suffix = _strip_trailing_channel(title, channel)
     channel_clean = _clean(channel)
@@ -26,7 +36,31 @@ def safe_name(channel: str, title: str, *, published: date | None) -> str:
     base = f"{channel_clean} — {title_clean}"
     if published:
         base = f"{base} [{published.isoformat()}]"
-    return base[:180].rstrip()
+    base = base[:180].rstrip()
+    slug = focus_slug(focus)
+    if slug:
+        base = f"{base} (focus: {slug})"
+    return base
+
+
+def focus_slug(focus: str | None) -> str | None:
+    """Slugify a focus string for use in filenames and tags.
+
+    Lowercase, NFC-normalized, runs of non-`[a-z0-9]` collapse to a single `-`,
+    leading/trailing `-` trimmed, capped at 40 chars (cut on a separator boundary
+    when possible). Empty / whitespace-only input returns None.
+    """
+    if focus is None:
+        return None
+    normalized = unicodedata.normalize("NFC", focus).strip().lower()
+    if not normalized:
+        return None
+    slug = _FOCUS_SLUG_NONALNUM.sub("-", normalized).strip("-")
+    if not slug:
+        return None
+    if len(slug) > _FOCUS_SLUG_MAX:
+        slug = slug[:_FOCUS_SLUG_MAX].rstrip("-")
+    return slug or None
 
 
 def _strip_trailing_channel(title: str, channel: str) -> str:
