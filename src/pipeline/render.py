@@ -6,6 +6,7 @@ from datetime import datetime
 
 from src.models import ExtractionResult, Insight, VideoMeta
 from src.utils.cost import format_duration
+from src.utils.filenames import focus_slug
 from src.utils.youtube import timestamp_url
 
 _CALLOUT_TYPE_BY_KIND = {
@@ -70,10 +71,15 @@ def _frontmatter(
         f"model: {extraction.model}",
         f"prompt_version: {extraction.prompt_version}",
         f"cost_usd: {cost_total}",
-        "tags:",
-        "  - podsave",
-        "---",
     ]
+    if extraction.focus:
+        lines.append(f'focus: "{_yaml_quote(extraction.focus)}"')
+    lines.append("tags:")
+    lines.append("  - podsave")
+    slug = focus_slug(extraction.focus)
+    if slug:
+        lines.append(f"  - podsave/{slug}")
+    lines.append("---")
     return "\n".join(lines)
 
 

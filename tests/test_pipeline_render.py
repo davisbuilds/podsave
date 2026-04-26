@@ -125,6 +125,57 @@ def test_render_falls_back_to_speaker_letter_when_unknown() -> None:
     assert "Speaker A @ 0:17" in note
 
 
+def test_render_note_includes_focus_frontmatter_when_set() -> None:
+    meta, extraction = _fixture()
+    extraction = extraction.model_copy(update={"focus": "career advice"})
+    note = render.render_note(
+        meta,
+        extraction,
+        version=1,
+        processed_at=datetime(2026, 4, 23, 12, 0, 0),
+        cost_usd={"stt": 0.0, "extract": 0.0},
+    )
+    assert 'focus: "career advice"' in note
+
+
+def test_render_note_omits_focus_frontmatter_when_unset() -> None:
+    meta, extraction = _fixture()
+    note = render.render_note(
+        meta,
+        extraction,
+        version=1,
+        processed_at=datetime(2026, 4, 23, 12, 0, 0),
+        cost_usd={"stt": 0.0, "extract": 0.0},
+    )
+    assert "focus:" not in note
+
+
+def test_render_note_includes_focus_subtag_when_set() -> None:
+    meta, extraction = _fixture()
+    extraction = extraction.model_copy(update={"focus": "career advice"})
+    note = render.render_note(
+        meta,
+        extraction,
+        version=1,
+        processed_at=datetime(2026, 4, 23, 12, 0, 0),
+        cost_usd={"stt": 0.0, "extract": 0.0},
+    )
+    assert "tags:\n  - podsave\n  - podsave/career-advice\n---" in note
+
+
+def test_render_note_keeps_existing_tag_format_when_unset() -> None:
+    meta, extraction = _fixture()
+    note = render.render_note(
+        meta,
+        extraction,
+        version=1,
+        processed_at=datetime(2026, 4, 23, 12, 0, 0),
+        cost_usd={"stt": 0.0, "extract": 0.0},
+    )
+    assert "tags:\n  - podsave\n---" in note
+    assert "podsave/" not in note
+
+
 def test_render_note_hour_plus_timestamp() -> None:
     meta, extraction = _fixture()
     extraction = extraction.model_copy(

@@ -64,6 +64,8 @@ class ExtractionResult(BaseModel):
 
     Empty when the model couldn't identify any speakers; render falls back to "Speaker A".
     """
+    focus: str | None = None
+    """Free-form focus string the user supplied via `--focus`, or None for broad extraction."""
 
 
 class RunRecord(BaseModel):
