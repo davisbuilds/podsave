@@ -46,6 +46,8 @@ The project uses `uv` for dependency management.
 - **Install**: `uv sync --extra dev`
 - **Integration tests** (real APIs, costs money): `PODSAVE_INTEGRATION=1 uv run pytest -q`
 
+**Long-running commands**: run pipeline operations like `./podsave drain`, `./podsave save`, `./podsave retry`, and integration tests in the background (e.g. `run_in_background: true`) and stream only the lines you'd act on (per-URL success/skip/fail, totals). Their full stdout is verbose and burns context for no gain.
+
 ## External State
 
 The CLI writes to paths outside the repo. These are not visible from `git status`:
