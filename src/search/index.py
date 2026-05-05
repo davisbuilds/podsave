@@ -57,6 +57,10 @@ def parse_note(path: Path) -> Note:
     text = path.read_text()
     fm_text, body = _split_frontmatter(text)
     fm = yaml.safe_load(fm_text) or {}
+    return _note_from_parts(path, fm, body)
+
+
+def _note_from_parts(path: Path, fm: dict[object, object], body: str) -> Note:
     return Note(
         path=path,
         title=str(fm.get("title", "")),
@@ -77,14 +81,14 @@ def _try_parse(path: Path) -> Note | None:
     except OSError:
         return None
     try:
-        fm_text, _ = _split_frontmatter(text)
+        fm_text, body = _split_frontmatter(text)
         fm = yaml.safe_load(fm_text) or {}
     except (ValueError, yaml.YAMLError):
         return None
     tags = fm.get("tags") or []
     if "podsave" not in [str(t) for t in tags]:
         return None
-    return parse_note(path)
+    return _note_from_parts(path, fm, body)
 
 
 def _split_frontmatter(text: str) -> tuple[str, str]:
