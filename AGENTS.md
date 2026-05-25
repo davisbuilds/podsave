@@ -1,14 +1,12 @@
-# AI Agent Guide
+# AGENTS.md
 
 `podsave` is a single-user CLI that turns a YouTube URL into a curated Obsidian note:
 
-```
+```txt
 yt-dlp audio → AssemblyAI diarized STT → OpenAI structured extraction → Obsidian markdown
 ```
 
 ## Documentation Map
-
-Read in order before touching code:
 
 - `docs/system/ARCHITECTURE.md` — layers, data flow, command composition (`_process_url` / `_extract_render_and_log`), external state (`~/.podsave/` + env-var overrides), error handling (`PodsaveError` + `@handle_errors`), cost model, v1 non-goals.
 - `docs/system/FEATURES.md` — every CLI command (`save`/`drain`/`retry`/`queue`/`stats`/`doctor`/`search`), output format, frontmatter spec, callout mapping, guards/limits, what's NOT supported in v1.
@@ -20,6 +18,7 @@ Read in order before touching code:
 The project uses `uv` for dependency management.
 
 - **Run CLI**: `./podsave <command>` (or `uv run podsave <command>`)
+- **List commands**: `./podsave --help` (lists all available CLI commands)
 - **Tests**: `uv run pytest -q`
 - **Lint**: `uv run ruff check .`
 - **Install**: `uv sync --extra dev`
@@ -38,3 +37,8 @@ The project uses `uv` for dependency management.
 - **Pre-push**: `uv run ruff check .` and `uv run pytest -q`.
 - **TDD**: red/green on anything data-shaped — models, filename sanitizer, versioning, queue/log, render output, cost math. Skip TDD for thin SDK wrappers (`download.download_audio`, `transcribe.transcribe`); mock-test them after.
 - **Integration tests** behind `PODSAVE_INTEGRATION=1` hit real YouTube + real APIs and cost real money. Run manually before shipping non-trivial pipeline changes; not part of pre-push.
+
+## Working Agreement
+
+- **Push back before building.** If a request is incoherent or self-contradictory, or a spec/plan is vague or skips key decisions, stop and interview me — ask clarifying questions and confirm intent before writing code or changing files. Don't guess at scope or comply silently. (Clear, well-scoped requests don't need this.)
+- **Keep docs current.** After a significant change, PR, or completed spec/plan, update any now-stale reference docs under `docs/system/` (and `docs/project/ROADMAP.md`) so they match shipped behavior. Skip this for trivial changes.
