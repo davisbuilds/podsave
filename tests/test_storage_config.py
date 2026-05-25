@@ -58,9 +58,7 @@ def test_load_config_with_real_keys_succeeds(podsave_home: Path) -> None:
     assert cfg.extraction_model == config_store.DEFAULT_EXTRACTION_MODEL
 
 
-def test_env_vars_override_file_values(
-    podsave_home: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_env_vars_override_file_values(podsave_home: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     config_store.write_skeleton(openai_api_key="from-file", assemblyai_api_key="from-file")
     monkeypatch.setenv("PODSAVE_OPENAI_API_KEY", "from-env")
     monkeypatch.setenv("PODSAVE_ASSEMBLYAI_API_KEY", "from-env")

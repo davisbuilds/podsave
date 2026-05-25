@@ -175,9 +175,7 @@ def test_download_audio_finds_file_after_yt_dlp_success(
     assert result.suffix == ".m4a"
 
 
-def test_download_audio_raises_on_failure(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_download_audio_raises_on_failure(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         subprocess,
         "run",
@@ -195,9 +193,7 @@ def test_download_audio_raises_when_no_file_produced(
     monkeypatch.setattr(
         subprocess,
         "run",
-        lambda *a, **kw: subprocess.CompletedProcess(
-            args=[], returncode=0, stdout="", stderr=""
-        ),
+        lambda *a, **kw: subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr=""),
     )
     with pytest.raises(DownloadError):
         download.download_audio(_meta(1800), tmp_path)

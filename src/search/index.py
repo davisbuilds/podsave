@@ -83,7 +83,7 @@ def _try_parse(path: Path) -> Note | None:
     try:
         fm_text, body = _split_frontmatter(text)
         fm = yaml.safe_load(fm_text) or {}
-    except (ValueError, yaml.YAMLError):
+    except ValueError, yaml.YAMLError:
         return None
     tags = fm.get("tags") or []
     if "podsave" not in [str(t) for t in tags]:

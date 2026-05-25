@@ -12,7 +12,7 @@ def test_safe_name_basic() -> None:
 
 
 def test_safe_name_strips_path_chars() -> None:
-    name = filenames.safe_name('Ch/a:n*nel', 'A "Good" Title?', published=None)
+    name = filenames.safe_name("Ch/a:n*nel", 'A "Good" Title?', published=None)
     assert "/" not in name
     assert "*" not in name
     assert ":" not in name

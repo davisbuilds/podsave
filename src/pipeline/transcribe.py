@@ -50,7 +50,5 @@ def transcribe(audio_path: Path, api_key: str, *, console: Console | None = None
 
     raw = getattr(transcript, "json_response", None)
     if raw is None:
-        raise TranscriptionError(
-            "AssemblyAI SDK returned no json_response — unexpected SDK shape"
-        )
+        raise TranscriptionError("AssemblyAI SDK returned no json_response — unexpected SDK shape")
     return raw

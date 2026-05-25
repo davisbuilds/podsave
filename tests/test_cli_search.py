@@ -85,9 +85,7 @@ def test_search_basic_invocation(podsave_home: Path, tmp_path: Path) -> None:
     assert "Hallucination" not in result.stdout
 
 
-def test_search_no_matches_exits_zero_with_message(
-    podsave_home: Path, tmp_path: Path
-) -> None:
+def test_search_no_matches_exits_zero_with_message(podsave_home: Path, tmp_path: Path) -> None:
     runner.invoke(app, ["init", "--no-prompt"])
     vault = tmp_path / "vault"
     _seed_config(vault)

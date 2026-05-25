@@ -74,9 +74,7 @@ def load_config() -> Config:
     extraction = raw.get("extraction", {})
 
     openai_key = os.environ.get("PODSAVE_OPENAI_API_KEY", api_keys.get("openai", ""))
-    assemblyai_key = os.environ.get(
-        "PODSAVE_ASSEMBLYAI_API_KEY", api_keys.get("assemblyai", "")
-    )
+    assemblyai_key = os.environ.get("PODSAVE_ASSEMBLYAI_API_KEY", api_keys.get("assemblyai", ""))
     vault = os.environ.get("PODSAVE_VAULT_PATH", paths_section.get("vault", paths.DEFAULT_VAULT))
     model = os.environ.get(
         "PODSAVE_EXTRACTION_MODEL", extraction.get("model", DEFAULT_EXTRACTION_MODEL)

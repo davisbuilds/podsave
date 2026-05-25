@@ -336,9 +336,7 @@ def _render_preview(meta: VideoMeta, estimate: CostEstimate) -> None:
     meta_table.add_row("Title", meta.title)
     meta_table.add_row("Channel", meta.channel)
     meta_table.add_row("Duration", f"{cost_utils.format_duration(meta.duration_sec)}")
-    meta_table.add_row(
-        "Published", meta.published.isoformat() if meta.published else "(unknown)"
-    )
+    meta_table.add_row("Published", meta.published.isoformat() if meta.published else "(unknown)")
     meta_table.add_row("URL", meta.url)
 
     cost_table = Table.grid(padding=(0, 2))
@@ -494,9 +492,7 @@ def doctor(
     completed_ids = {r.video_id for r in log_store.read_all() if r.status == "complete"}
     transcripts = sorted(paths.transcripts_dir().glob("*.json"))
     orphan_transcripts = [
-        p
-        for p in transcripts
-        if not p.name.endswith(".meta.json") and p.stem not in completed_ids
+        p for p in transcripts if not p.name.endswith(".meta.json") and p.stem not in completed_ids
     ]
     if orphan_transcripts:
         issues += 1
@@ -664,9 +660,7 @@ def search(
 
     notes = search_index.walk_vault(vault)
     notes_searched = len(notes)
-    filtered = search_filters.apply(
-        notes, kind=kind, channel=channel, focus=focus, since=since
-    )
+    filtered = search_filters.apply(notes, kind=kind, channel=channel, focus=focus, since=since)
 
     matcher = GrepMatcher()
     pairs: list[tuple[Any, Any]] = []

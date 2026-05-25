@@ -79,9 +79,7 @@ def test_save_passes_focus_through_and_writes_focused_note(
     monkeypatch.setattr(download, "probe", lambda url: m)
 
     captured: dict[str, Any] = {}
-    monkeypatch.setattr(
-        extract_mod, "extract", _stub_extract(captured, _extraction_with_items())
-    )
+    monkeypatch.setattr(extract_mod, "extract", _stub_extract(captured, _extraction_with_items()))
 
     result = runner.invoke(app, ["save", m.url, "--focus", "career advice"])
     assert result.exit_code == 0, result.stdout + (result.stderr or "")
@@ -103,9 +101,7 @@ def test_retry_passes_focus_through(
     transcript_store.save(m.video_id, {"text": "cached"}, m)
 
     captured: dict[str, Any] = {}
-    monkeypatch.setattr(
-        extract_mod, "extract", _stub_extract(captured, _extraction_with_items())
-    )
+    monkeypatch.setattr(extract_mod, "extract", _stub_extract(captured, _extraction_with_items()))
 
     result = runner.invoke(app, ["retry", m.video_id, "--focus", "AI policy"])
     assert result.exit_code == 0, result.stdout + (result.stderr or "")
@@ -128,9 +124,7 @@ def test_save_with_empty_focus_treated_as_unfocused(
     monkeypatch.setattr(download, "probe", lambda url: m)
 
     captured: dict[str, Any] = {}
-    monkeypatch.setattr(
-        extract_mod, "extract", _stub_extract(captured, _extraction_with_items())
-    )
+    monkeypatch.setattr(extract_mod, "extract", _stub_extract(captured, _extraction_with_items()))
 
     result = runner.invoke(app, ["save", m.url, "--focus", "   "])
     assert result.exit_code == 0, result.stdout + (result.stderr or "")

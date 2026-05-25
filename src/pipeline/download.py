@@ -43,8 +43,7 @@ def probe(url: str) -> VideoMeta:
         from src.errors import PlaylistURLError
 
         raise PlaylistURLError(
-            f"playlist URLs are not supported in v1: {url!r} — "
-            "paste individual video URLs instead"
+            f"playlist URLs are not supported in v1: {url!r} — paste individual video URLs instead"
         )
 
     try:

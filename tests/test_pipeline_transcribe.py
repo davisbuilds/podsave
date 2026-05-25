@@ -35,25 +35,17 @@ def test_transcribe_returns_raw_json_response(
     audio.write_bytes(b"fake")
     payload = {"id": "t1", "text": "hello", "utterances": []}
     fake = _FakeTranscript(status=aai.TranscriptStatus.completed, error=None, response=payload)
-    monkeypatch.setattr(
-        aai, "Transcriber", lambda *a, **kw: _FakeTranscriber(fake, *a, **kw)
-    )
+    monkeypatch.setattr(aai, "Transcriber", lambda *a, **kw: _FakeTranscriber(fake, *a, **kw))
 
     raw = transcribe.transcribe(audio, api_key="test-key")
     assert raw == payload
 
 
-def test_transcribe_raises_on_error_status(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_transcribe_raises_on_error_status(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     audio = tmp_path / "x.m4a"
     audio.write_bytes(b"fake")
-    fake = _FakeTranscript(
-        status=aai.TranscriptStatus.error, error="quota exceeded", response=None
-    )
-    monkeypatch.setattr(
-        aai, "Transcriber", lambda *a, **kw: _FakeTranscriber(fake, *a, **kw)
-    )
+    fake = _FakeTranscript(status=aai.TranscriptStatus.error, error="quota exceeded", response=None)
+    monkeypatch.setattr(aai, "Transcriber", lambda *a, **kw: _FakeTranscriber(fake, *a, **kw))
 
     with pytest.raises(TranscriptionError) as ei:
         transcribe.transcribe(audio, api_key="test-key")

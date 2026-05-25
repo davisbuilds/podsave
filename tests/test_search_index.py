@@ -141,9 +141,7 @@ def test_walk_vault_skips_dot_directories(tmp_path: Path) -> None:
     _write_note(tmp_path, _extraction(), filename="real.md")
     obsidian_dir = tmp_path / ".obsidian"
     obsidian_dir.mkdir()
-    (obsidian_dir / "config.md").write_text(
-        "---\ntags:\n  - podsave\n---\n\nshould be ignored\n"
-    )
+    (obsidian_dir / "config.md").write_text("---\ntags:\n  - podsave\n---\n\nshould be ignored\n")
     git_dir = tmp_path / ".git"
     git_dir.mkdir()
     (git_dir / "leak.md").write_text("---\ntags: [podsave]\n---\nx\n")

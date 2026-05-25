@@ -39,8 +39,7 @@ def extract_video_id(url: str) -> str:
     """
     if is_playlist(url):
         raise PlaylistURLError(
-            f"playlist URLs are not supported in v1: {url!r} — "
-            "paste individual video URLs instead"
+            f"playlist URLs are not supported in v1: {url!r} — paste individual video URLs instead"
         )
 
     host, path, query = _parse(url)

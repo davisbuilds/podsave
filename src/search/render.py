@@ -40,8 +40,7 @@ def render_terminal(
 
     unique_notes = len({note.path for _, note in matches})
     footer = (
-        f'[dim]{len(matches)} callout(s) across {unique_notes} note(s) — '
-        f'query: "{query}"[/dim]'
+        f'[dim]{len(matches)} callout(s) across {unique_notes} note(s) — query: "{query}"[/dim]'
     )
     if filter_summary:
         footer += f" [dim]· filters: {filter_summary}[/dim]"
@@ -90,7 +89,7 @@ def _vault_note_body(
 ) -> str:
     fm_lines = [
         "---",
-        f'title: \'Search — "{_yaml_quote(query)}"\'',
+        f"title: 'Search — \"{_yaml_quote(query)}\"'",
         f'query: "{_yaml_quote(query)}"',
         f"generated: {generated_at.isoformat(timespec='seconds')}",
         f"matches: {len(matches)}",

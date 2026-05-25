@@ -55,9 +55,7 @@ def test_queue_clear_removes_all(podsave_home: Path) -> None:
     assert "cleared 2" in result.stdout.lower()
 
 
-def test_queue_edit_invokes_editor(
-    podsave_home: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_queue_edit_invokes_editor(podsave_home: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     runner.invoke(app, ["init", "--no-prompt"])
     calls: list[list[str]] = []
 
