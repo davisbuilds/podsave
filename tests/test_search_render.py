@@ -129,12 +129,12 @@ def test_render_vault_note_filename_slugs_query(tmp_path: Path) -> None:
 
 
 def test_render_vault_note_versions_on_collision(tmp_path: Path) -> None:
-    args = dict(
-        query="x",
-        notes_searched=1,
-        filters={},
-        generated_at=datetime(2026, 4, 26, 12, 0, 0),
-    )
+    args = {
+        "query": "x",
+        "notes_searched": 1,
+        "filters": {},
+        "generated_at": datetime(2026, 4, 26, 12, 0, 0),
+    }
     p1 = render.render_vault_note(tmp_path, [_insight_match()], **args)  # type: ignore[arg-type]
     p2 = render.render_vault_note(tmp_path, [_insight_match()], **args)  # type: ignore[arg-type]
     assert p1.exists()

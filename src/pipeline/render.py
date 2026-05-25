@@ -127,10 +127,7 @@ def _resolve_speaker(letter: str | None, speakers: dict[str, str]) -> str:
 
 
 def _body_lines(item: Insight) -> list[str]:
-    if item.kind == "quote":
-        text = f'"{item.text}"'
-    else:
-        text = item.text
+    text = f'"{item.text}"' if item.kind == "quote" else item.text
     lines = [text]
     if item.context:
         lines.extend(["", f"*{item.context}*"])

@@ -40,4 +40,8 @@ line-length = 100
 target-version = "py314"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP"]
+select = ["E", "F", "I", "B", "UP", "W", "C4", "SIM", "ERA", "RUF", "PIE"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test stub classes mimic external SDK response shapes; mutable class attrs are fine.
+"tests/**" = ["RUF012"]

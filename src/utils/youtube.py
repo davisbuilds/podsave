@@ -29,9 +29,7 @@ def is_playlist(url: str) -> bool:
     """True iff url refers to a playlist (not a single video, even one in a playlist)."""
     _, path, query = _parse(url)
     # /playlist with list= and no v= → pure playlist
-    if path.rstrip("/").endswith("/playlist") and "list" in query and "v" not in query:
-        return True
-    return False
+    return path.rstrip("/").endswith("/playlist") and "list" in query and "v" not in query
 
 
 def extract_video_id(url: str) -> str:

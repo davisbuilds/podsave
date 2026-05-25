@@ -13,8 +13,8 @@ ASSEMBLYAI_PER_HOUR_USD = 0.21  # universal-3-pro
 OPENAI_INPUT_PER_MILLION_USD = 0.75  # gpt-5.4-mini
 OPENAI_OUTPUT_PER_MILLION_USD = 4.50
 
-TOKENS_PER_MINUTE_AUDIO = 200  # ~150 spoken words/min × ~1.3 tokens/word
-OUTPUT_TOKENS_PER_RUN = 500  # 10 insights × ~50 tokens each, padded
+TOKENS_PER_MINUTE_AUDIO = 200  # ~150 spoken words/min x ~1.3 tokens/word
+OUTPUT_TOKENS_PER_RUN = 500  # 10 insights x ~50 tokens each, padded
 
 
 def estimate(duration_sec: int) -> CostEstimate:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import os
 import subprocess
 import sys
@@ -507,10 +508,8 @@ def doctor(
             title = "(no meta)"
             meta_path = p.with_suffix(".meta.json")
             if meta_path.exists():
-                try:
+                with contextlib.suppress(Exception):
                     title = VideoMeta.model_validate_json(meta_path.read_text()).title
-                except Exception:
-                    pass
             orphan_table.add_row(video_id, title)
         console.print(
             Panel(
