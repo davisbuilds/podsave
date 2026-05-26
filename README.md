@@ -1,12 +1,16 @@
 # podsave
 
-Turn a YouTube URL into a curated Obsidian note — diarized transcript, top-10 insights/quotes/spicy-takes, quotes linked back to the exact YouTube timestamp.
+Single-user CLI that turns a YouTube URL into a curated Obsidian note with a
+diarized transcript, top insights, quotes, spicy takes, and timestamp links back
+to the source video.
 
-```
-yt-dlp audio → AssemblyAI diarized STT → OpenAI structured extraction → Obsidian markdown note
+```text
+yt-dlp audio -> AssemblyAI diarized STT -> OpenAI structured extraction -> Obsidian markdown note
 ```
 
-Transcripts cache locally, so re-processing a video is cheap (it only pays the extraction tokens). Re-processing the same URL bumps a version suffix on the note rather than overwriting.
+Transcripts cache locally, so re-processing a video is cheap: it reuses STT and
+only pays extraction tokens. Re-processing the same URL writes a versioned note
+instead of overwriting the prior one.
 
 ## Agent Setup
 
@@ -46,72 +50,80 @@ API keys.
 
 Prefer to do it yourself? The manual steps are below.
 
-## Status
+## What It Does
 
-v1 (full pipeline), v1.1 (stats / doctor / speaker resolution / filename dedup), v1.2 (focused extraction via `--focus`), and v2.0 (vault search) all shipped. See `docs/plans/`.
+- Downloads YouTube audio with `yt-dlp`.
+- Sends audio to AssemblyAI for diarized speech-to-text.
+- Extracts structured insights with OpenAI.
+- Writes Obsidian Markdown notes with timestamp-linked quotes.
+- Caches transcripts under `~/.podsave/transcripts/`.
+- Supports focused re-extraction from cached transcripts via `--focus`.
+- Searches existing vault callouts and can write search result notes.
+- Manages a simple queue under `~/.podsave/queue.txt`.
 
-## Install
+## Quick Start
+
+Requirements:
+
+- Python `3.14+`
+- `uv`
+- AssemblyAI API key for real transcription
+- OpenAI API key for real extraction
 
 ```bash
 uv sync --extra dev
-./podsave init           # creates ~/.podsave/, prompts for API keys
+./podsave init
+./podsave save --dry-run "https://www.youtube.com/watch?v=QVJcdfkRpH8"
 ```
 
-`init` also symlinks `./queue.txt` → `~/.podsave/queue.txt` when run from the project directory, so you can edit the queue alongside the codebase in your editor.
+`./podsave init` creates `~/.podsave/`, prompts for API keys, and symlinks
+`./queue.txt` to `~/.podsave/queue.txt` when run from the project directory.
 
-You'll need:
-- **AssemblyAI API key** — `universal-3-pro` model, ~$0.21/hr of audio
-- **OpenAI API key** — `gpt-5.4-mini` by default ($0.75 / $4.50 per M in/out tokens)
-
-Vault defaults to `~/obsd/Resources/Podsave/`; override in `~/.podsave/config.toml` under `[paths] vault = "..."`.
-
-## Usage
+## Common Commands
 
 ```bash
-# Preview what a run will cost without spending anything
 ./podsave save --dry-run "https://www.youtube.com/watch?v=QVJcdfkRpH8"
-
-# Process for real: download → transcribe → extract → write note
 ./podsave save "https://www.youtube.com/watch?v=QVJcdfkRpH8"
-
-# Re-extract a cached transcript through a focus lens (cheap — no STT)
 ./podsave retry QVJcdfkRpH8 --focus "career advice"
-
-# Search every callout across the vault; --write drops a results note into <vault>/Callouts/
 ./podsave search "memory consolidation" --kind quote
 ./podsave search "agency" --channel Anthropic --since 90d --write
-
-# Queue management
 ./podsave queue add "https://youtu.be/..."
 ./podsave queue list
+
+uv run pytest -q
+uv run ruff check .
+uv run ruff format --check .
 ```
 
-Playlist URLs are rejected with a clean error (no silent expansion). By default videos under 15 minutes or over 4 hours are refused; override with `--force`.
+Playlist URLs are rejected with a clean error. By default, videos under 15
+minutes or over 4 hours are refused; override with `--force`.
 
-## External state
+## Configuration And External State
 
-`~/.podsave/` holds everything mutable:
+`~/.podsave/` holds mutable state:
 
 - `config.toml` — API keys, vault path, extraction model
-- `queue.txt` — pending URLs (symlinked into the repo on `init`)
-- `transcripts/<video_id>.json` + `.meta.json` — STT cache (reused on re-runs)
+- `queue.txt` — pending URLs
+- `transcripts/<video_id>.json` and `.meta.json` — STT cache
 - `processed.jsonl` — append-only run log with cost breakdown
-- `tmp/` — audio files, cleaned after transcription
+- `tmp/` — temporary audio files, cleaned after transcription
 
-## Tech
+Required keys for real processing:
 
-- Python 3.14, [uv](https://github.com/astral-sh/uv), [Typer](https://typer.tiangolo.com), [rich](https://github.com/Textualize/rich), [pydantic](https://docs.pydantic.dev)
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) for audio (native webm/m4a, no ffmpeg needed)
-- [AssemblyAI](https://www.assemblyai.com) for diarized STT (`universal-3-pro`)
-- [OpenAI](https://platform.openai.com) structured outputs for extraction
+- `ASSEMBLYAI_API_KEY` — diarized STT using `universal-3-pro`
+- `OPENAI_API_KEY` — structured extraction, `gpt-5.4-mini` by default
 
-## Development
+Vault output defaults to `~/obsd/Resources/Podsave/`. Override it in
+`~/.podsave/config.toml` under `[paths] vault = "..."`.
 
-```bash
-uv run pytest -q             # full test suite
-uv run ruff check .          # lint
+## Code Layout
 
-PODSAVE_INTEGRATION=1 uv run pytest -q    # includes real-API integration tests
+```text
+src/           Typer CLI, pipeline, integrations, extraction, vault output
+tests/         pytest suite
+docs/          system, project, and plan docs
+podsave        local launcher
+queue.txt      project symlink to ~/.podsave/queue.txt after init
 ```
 
 ## Documentation
@@ -122,5 +134,11 @@ PODSAVE_INTEGRATION=1 uv run pytest -q    # includes real-API integration tests
 - Operations: [docs/system/OPERATIONS.md](docs/system/OPERATIONS.md)
 - Roadmap: [docs/project/ROADMAP.md](docs/project/ROADMAP.md)
 - Plans: [docs/plans/](docs/plans/)
+- Original full build plan: [docs/plans/2026-04-23-podsave-v1.md](docs/plans/2026-04-23-podsave-v1.md)
 
-See `docs/plans/2026-04-23-podsave-v1.md` for the original full build plan.
+## Current Boundaries
+
+- Real `save`, `drain`, and `retry` processing requires paid API keys.
+- Integration tests are opt-in with `PODSAVE_INTEGRATION=1`.
+- Playlist expansion is intentionally rejected.
+- Video duration guardrails are enforced unless `--force` is provided.
