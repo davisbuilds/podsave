@@ -114,4 +114,13 @@ uv run ruff check .          # lint
 PODSAVE_INTEGRATION=1 uv run pytest -q    # includes real-API integration tests
 ```
 
-See `AGENTS.md` for conventions and `docs/plans/2026-04-23-podsave-v1.md` for the full build plan.
+## Documentation
+
+- Agent guidance: [AGENTS.md](AGENTS.md)
+- Architecture: [docs/system/ARCHITECTURE.md](docs/system/ARCHITECTURE.md)
+- Features: [docs/system/FEATURES.md](docs/system/FEATURES.md)
+- Operations: [docs/system/OPERATIONS.md](docs/system/OPERATIONS.md)
+- Roadmap: [docs/project/ROADMAP.md](docs/project/ROADMAP.md)
+- Plans: [docs/plans/](docs/plans/)
+
+See `docs/plans/2026-04-23-podsave-v1.md` for the original full build plan.

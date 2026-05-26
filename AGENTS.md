@@ -10,6 +10,7 @@ yt-dlp audio → AssemblyAI diarized STT → OpenAI structured extraction → Ob
 
 - `docs/system/ARCHITECTURE.md` — layers, data flow, command composition (`_process_url` / `_extract_render_and_log`), external state (`~/.podsave/` + env-var overrides), error handling (`PodsaveError` + `@handle_errors`), cost model, v1 non-goals.
 - `docs/system/FEATURES.md` — every CLI command (`save`/`drain`/`retry`/`queue`/`stats`/`doctor`/`search`), output format, frontmatter spec, callout mapping, guards/limits, what's NOT supported in v1.
+- `docs/system/OPERATIONS.md` — setup, config/env overrides, paid pipeline safety, commands, CI/local verification, external state, recovery, troubleshooting.
 - `docs/project/SPEC.md` — v1 problem framing, in/out scope, user flow, non-functional requirements, dogfood exit criteria.
 - `docs/project/ROADMAP.md` — shipped versions through v2.0, near-term plan (e.g. v2.2 digest mode).
 
@@ -43,3 +44,4 @@ The project uses `uv` for dependency management.
 
 - **Push back before building.** If a request is incoherent or self-contradictory, or a spec/plan is vague or skips key decisions, stop and interview me — ask clarifying questions and confirm intent before writing code or changing files. Don't guess at scope or comply silently. (Clear, well-scoped requests don't need this.)
 - **Keep docs current.** After a significant change, PR, or completed spec/plan, update any now-stale reference docs under `docs/system/` (and `docs/project/ROADMAP.md`) so they match shipped behavior. Skip this for trivial changes.
+- **Commit logically.** Commit completed work in coherent chunks as you proceed. Push only when explicitly asked.
