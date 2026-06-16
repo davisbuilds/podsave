@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from src.models import ExtractionResult, Insight, VideoMeta
-from src.pipeline import render
+from podsave.models import ExtractionResult, Insight, VideoMeta
+from podsave.pipeline import render
 
 
 def _fixture() -> tuple[VideoMeta, ExtractionResult]:

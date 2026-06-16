@@ -5,9 +5,9 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from src.cli import app
-from src.models import RunRecord
-from src.storage import log as log_store
+from podsave.cli import app
+from podsave.models import RunRecord
+from podsave.storage import log as log_store
 
 runner = CliRunner()
 

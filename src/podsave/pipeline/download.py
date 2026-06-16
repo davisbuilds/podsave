@@ -8,9 +8,9 @@ import subprocess
 from datetime import date
 from pathlib import Path
 
-from src.errors import DownloadError, DurationGuardError, ProbeError
-from src.models import VideoMeta
-from src.utils.youtube import extract_video_id, is_playlist
+from podsave.errors import DownloadError, DurationGuardError, ProbeError
+from podsave.models import VideoMeta
+from podsave.utils.youtube import extract_video_id, is_playlist
 
 _YT_DLP_CMD = "yt-dlp"
 
@@ -40,7 +40,7 @@ def probe(url: str) -> VideoMeta:
     Raises PlaylistURLError before shelling out if the URL is a playlist.
     """
     if is_playlist(url):
-        from src.errors import PlaylistURLError
+        from podsave.errors import PlaylistURLError
 
         raise PlaylistURLError(
             f"playlist URLs are not supported in v1: {url!r} — paste individual video URLs instead"

@@ -8,9 +8,9 @@ from typing import Any
 
 import pytest
 
-from src.errors import DownloadError, DurationGuardError, PlaylistURLError, ProbeError
-from src.models import VideoMeta
-from src.pipeline import download
+from podsave.errors import DownloadError, DurationGuardError, PlaylistURLError, ProbeError
+from podsave.models import VideoMeta
+from podsave.pipeline import download
 
 
 def _fake_yt_dlp_ok(payload: dict[str, Any]) -> subprocess.CompletedProcess[str]:

@@ -7,8 +7,8 @@ from typing import Any
 import assemblyai as aai
 import pytest
 
-from src.errors import TranscriptionError
-from src.pipeline import transcribe
+from podsave.errors import TranscriptionError
+from podsave.pipeline import transcribe
 
 
 class _FakeTranscript:

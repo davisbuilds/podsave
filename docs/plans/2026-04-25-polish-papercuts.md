@@ -31,8 +31,8 @@ Order is from cheapest → most invasive so each lands behind a green test bar b
 
 - 105 tests passing, ruff clean.
 - Pipeline is `cli → pipeline/{download,transcribe,extract,render} → storage/{config,queue,log,transcripts}`.
-- Filenames are produced by `src/utils/filenames.safe_name(channel, title, *, published)`.
-- Speakers come out of AssemblyAI as `"A"`, `"B"`, `"C"` and are passed through unchanged into `Insight.speaker`, then rendered as `"Speaker A"` etc. in `src/pipeline/render._callout_title`.
+- Filenames are produced by `src/podsave/utils/filenames.safe_name(channel, title, *, published)`.
+- Speakers come out of AssemblyAI as `"A"`, `"B"`, `"C"` and are passed through unchanged into `Insight.speaker`, then rendered as `"Speaker A"` etc. in `src/podsave/pipeline/render._callout_title`.
 - `processed.jsonl` already records `cost_usd` per stage and `duration_sec` — `stats` is essentially a reduce over `log.read_all()`.
 
 ## Phase 1 — Filename dedup
@@ -43,7 +43,7 @@ When a video title ends with `... | AI Explained`, `safe_name("AI Explained", "F
 
 ### Approach
 
-Pure-function fix in `src/utils/filenames.py`. Strip a trailing channel marker from the title before composing the basename. Match patterns (case-insensitive, after NFC + whitespace collapse):
+Pure-function fix in `src/podsave/utils/filenames.py`. Strip a trailing channel marker from the title before composing the basename. Match patterns (case-insensitive, after NFC + whitespace collapse):
 
 - `<title> | <channel>`
 - `<title> — <channel>` (em dash)
@@ -108,9 +108,9 @@ Pick option (2). Channel is already in `meta` everywhere we write a record. Addi
 
 ### Files touched
 
-- `src/models.py` — add `RunRecord.channel: str | None = None`.
-- `src/cli.py` — set `channel=meta.channel` in both `_extract_render_and_log` and the `drain` failure path (use `meta.channel` if probed, else None).
-- `src/cli.py` — new `@app.command() stats()` body.
+- `src/podsave/models.py` — add `RunRecord.channel: str | None = None`.
+- `src/podsave/cli.py` — set `channel=meta.channel` in both `_extract_render_and_log` and the `drain` failure path (use `meta.channel` if probed, else None).
+- `src/podsave/cli.py` — new `@app.command() stats()` body.
 - New `tests/test_cli_stats.py` — fixture writes a few `RunRecord`s into a tmp log, asserts the rich output mentions key totals.
 
 ### Tests
@@ -146,8 +146,8 @@ Report sections:
 
 ### Files touched
 
-- New `src/cli.py::doctor` command.
-- New `src/storage/doctor.py` (or inline helpers in `cli.py` if small enough — likely inline).
+- New `src/podsave/cli.py::doctor` command.
+- New `src/podsave/storage/doctor.py` (or inline helpers in `cli.py` if small enough — likely inline).
 - New `tests/test_cli_doctor.py`.
 
 ### Tests
@@ -189,10 +189,10 @@ A second OpenAI call would double extraction cost for marginal benefit and add l
 
 ### Files touched
 
-- `src/pipeline/prompts/extract_v2.md` — copy v1, add the speaker-resolution section.
-- `src/pipeline/extract.py` — bump `PROMPT_VERSION = "v2"`, point at v2 file, add `_SpeakerLabel` to schema, project to `dict[str, str | None]`.
-- `src/models.py` — `ExtractionResult.speakers: dict[str, str | None] = Field(default_factory=dict)` (additive, optional).
-- `src/pipeline/render.py` — `_callout_title` accepts the speaker map; render `_resolved_speaker(label, map)`.
+- `src/podsave/pipeline/prompts/extract_v2.md` — copy v1, add the speaker-resolution section.
+- `src/podsave/pipeline/extract.py` — bump `PROMPT_VERSION = "v2"`, point at v2 file, add `_SpeakerLabel` to schema, project to `dict[str, str | None]`.
+- `src/podsave/models.py` — `ExtractionResult.speakers: dict[str, str | None] = Field(default_factory=dict)` (additive, optional).
+- `src/podsave/pipeline/render.py` — `_callout_title` accepts the speaker map; render `_resolved_speaker(label, map)`.
 - `tests/test_pipeline_extract.py` — extend mocked OpenAI parse to include speakers; assert plumbed through.
 - `tests/test_pipeline_render.py` — new tests for resolved name, low-confidence suffix, fallback to letter.
 

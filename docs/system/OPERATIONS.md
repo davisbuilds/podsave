@@ -54,7 +54,7 @@ Environment overrides:
 - `PODSAVE_EXTRACTION_MODEL`
 
 `PODSAVE_HOME` is heavily used by tests. Avoid hard-coding `~/.podsave`; use
-`src/storage/paths.py`.
+`src/podsave/storage/paths.py`.
 
 ## Paid Pipeline Safety
 
@@ -161,5 +161,5 @@ transcripts, logs, queue entries, or vault notes.
 | Playlist rejected | Use an individual YouTube video URL; playlist expansion is intentionally unsupported. |
 | No note after focused retry | Broaden `--focus` or retry without focus; zero focused items are logged as failed. |
 | Search finds nothing | Confirm the vault path and that notes have `podsave` tags/callouts. |
-| Note title/version surprising | Check filename sanitization and version collision behavior in `src/utils/filenames.py`. |
+| Note title/version surprising | Check filename sanitization and version collision behavior in `src/podsave/utils/filenames.py`. |
 

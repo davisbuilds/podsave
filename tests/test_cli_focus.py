@@ -7,13 +7,13 @@ from typing import Any
 import pytest
 from typer.testing import CliRunner
 
-from src.cli import app
-from src.models import ExtractionResult, Insight, VideoMeta
-from src.pipeline import download
-from src.pipeline import extract as extract_mod
-from src.storage import log as log_store
-from src.storage import paths
-from src.storage import transcripts as transcript_store
+from podsave.cli import app
+from podsave.models import ExtractionResult, Insight, VideoMeta
+from podsave.pipeline import download
+from podsave.pipeline import extract as extract_mod
+from podsave.storage import log as log_store
+from podsave.storage import paths
+from podsave.storage import transcripts as transcript_store
 
 runner = CliRunner()
 

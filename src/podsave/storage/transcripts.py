@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from src.errors import TranscriptNotFoundError
-from src.models import VideoMeta
-from src.storage import paths
+from podsave.errors import TranscriptNotFoundError
+from podsave.models import VideoMeta
+from podsave.storage import paths
 
 
 def _transcript_path(video_id: str) -> Path:

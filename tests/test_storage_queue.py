@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from src.storage import queue as queue_store
+from podsave.storage import queue as queue_store
 
 
 def test_empty_queue(podsave_home: Path) -> None:

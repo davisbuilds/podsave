@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 
-from src.models import RunRecord
-from src.storage import log as log_store
+from podsave.models import RunRecord
+from podsave.storage import log as log_store
 
 
 def _record(video_id: str, status: str = "complete", version: int = 1) -> RunRecord:

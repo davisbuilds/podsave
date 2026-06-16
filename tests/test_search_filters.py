@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from src.search import filters
-from src.search.callout import Callout
-from src.search.index import Note
+from podsave.search import filters
+from podsave.search.callout import Callout
+from podsave.search.index import Note
 
 
 def _note(

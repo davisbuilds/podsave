@@ -7,10 +7,10 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from src.cli import app
-from src.models import VideoMeta
-from src.pipeline import download
-from src.storage import paths
+from podsave.cli import app
+from podsave.models import VideoMeta
+from podsave.pipeline import download
+from podsave.storage import paths
 
 runner = CliRunner()
 
@@ -160,9 +160,9 @@ def test_save_non_dry_run_uses_cached_transcript(
     )
 
     # Seed cache — save() should skip download + transcribe.
-    from src.models import ExtractionResult, Insight
-    from src.pipeline import extract as extract_mod
-    from src.storage import transcripts as transcript_store
+    from podsave.models import ExtractionResult, Insight
+    from podsave.pipeline import extract as extract_mod
+    from podsave.storage import transcripts as transcript_store
 
     transcript_store.save(fake_meta.video_id, {"text": "cached"}, fake_meta)
 

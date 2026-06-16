@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from src.errors import InvalidYouTubeURLError, PlaylistURLError
-from src.utils.youtube import extract_video_id, is_playlist, timestamp_url
+from podsave.errors import InvalidYouTubeURLError, PlaylistURLError
+from podsave.utils.youtube import extract_video_id, is_playlist, timestamp_url
 
 VALID_ID = "dQw4w9WgXcQ"  # 11 chars
 

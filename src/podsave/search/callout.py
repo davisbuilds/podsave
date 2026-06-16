@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from src.models import InsightKind
+from podsave.models import InsightKind
 
 
 class Callout(BaseModel):

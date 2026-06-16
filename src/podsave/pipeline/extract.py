@@ -9,8 +9,8 @@ from typing import Any, Literal
 from openai import OpenAI
 from pydantic import BaseModel
 
-from src.errors import PodsaveError
-from src.models import ExtractionResult, Insight, VideoMeta
+from podsave.errors import PodsaveError
+from podsave.models import ExtractionResult, Insight, VideoMeta
 
 PROMPT_VERSION = "v2"
 _PROMPT_PATH = Path(__file__).parent / "prompts" / "extract_v2.md"

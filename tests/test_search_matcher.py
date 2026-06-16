@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from src.search import matcher
-from src.search.callout import Callout
+from podsave.search import matcher
+from podsave.search.callout import Callout
 
 
 def _co(text: str, *, kind: str = "insight", rank: int = 1, context: str | None = None) -> Callout:

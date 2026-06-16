@@ -5,10 +5,10 @@ from pathlib import Path
 
 from rich.console import Console
 
-from src.search import render
-from src.search.callout import Callout
-from src.search.index import Note
-from src.search.matcher import Match
+from podsave.search import render
+from podsave.search.callout import Callout
+from podsave.search.index import Note
+from podsave.search.matcher import Match
 
 
 def _note(*, title: str = "Source Note", path: Path | None = None) -> Note:

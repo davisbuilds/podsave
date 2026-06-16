@@ -6,7 +6,7 @@ calibrate these after Phase 3's first live run.
 
 from __future__ import annotations
 
-from src.models import CostEstimate
+from podsave.models import CostEstimate
 
 ASSEMBLYAI_PER_HOUR_USD = 0.21  # universal-3-pro
 

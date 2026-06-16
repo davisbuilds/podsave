@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from src.search.index import Note
-from src.search.matcher import Match
+from podsave.search.index import Note
+from podsave.search.matcher import Match
 
 
 def rank(

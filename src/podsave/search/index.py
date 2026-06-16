@@ -9,7 +9,7 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel
 
-from src.search.callout import Callout
+from podsave.search.callout import Callout
 
 _FRONTMATTER_DELIM = "---"
 _CALLOUT_HEADER = re.compile(r"^>\s*\[!(?P<type>note|quote|warning)\]\s*(?P<title>.*)$")

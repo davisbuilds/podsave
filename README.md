@@ -119,7 +119,7 @@ Vault output defaults to `~/obsd/Resources/Podsave/`. Override it in
 ## Code Layout
 
 ```text
-src/           Typer CLI, pipeline, integrations, extraction, vault output
+src/podsave/           Typer CLI, pipeline, integrations, extraction, vault output
 tests/         pytest suite
 docs/          system, project, and plan docs
 podsave        local launcher

@@ -6,8 +6,8 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from src.errors import ConfigInvalidError, ConfigMissingError
-from src.storage import paths
+from podsave.errors import ConfigInvalidError, ConfigMissingError
+from podsave.storage import paths
 
 DEFAULT_EXTRACTION_MODEL = "gpt-5.4-mini"
 PLACEHOLDER = "REPLACE_ME"

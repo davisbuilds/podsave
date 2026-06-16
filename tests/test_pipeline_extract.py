@@ -5,8 +5,8 @@ from typing import Any
 
 import pytest
 
-from src.models import VideoMeta
-from src.pipeline import extract
+from podsave.models import VideoMeta
+from podsave.pipeline import extract
 
 
 def _meta() -> VideoMeta:
@@ -116,7 +116,7 @@ def test_extract_raises_on_empty_transcript() -> None:
 
 
 def test_refine_quote_timestamps_snaps_to_word_start() -> None:
-    from src.models import Insight
+    from podsave.models import Insight
 
     words = [
         {"text": "The", "start": 10_000},
@@ -157,7 +157,7 @@ def test_refine_quote_timestamps_snaps_to_word_start() -> None:
 
 
 def test_refine_quote_timestamps_leaves_start_when_no_match() -> None:
-    from src.models import Insight
+    from podsave.models import Insight
 
     words = [{"text": "unrelated", "start": 5_000}, {"text": "words", "start": 5_200}]
     items = [
@@ -168,7 +168,7 @@ def test_refine_quote_timestamps_leaves_start_when_no_match() -> None:
 
 
 def test_refine_quote_timestamps_no_words_is_noop() -> None:
-    from src.models import Insight
+    from podsave.models import Insight
 
     items = [Insight(kind="quote", text="anything", start_ms=999, rank=1)]
     extract._refine_quote_timestamps(items, [])

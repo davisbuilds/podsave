@@ -5,9 +5,9 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from src.cli import app
-from src.storage import paths
-from src.storage import queue as queue_store
+from podsave.cli import app
+from podsave.storage import paths
+from podsave.storage import queue as queue_store
 
 runner = CliRunner()
 
@@ -67,7 +67,7 @@ def test_queue_edit_invokes_editor(podsave_home: Path, monkeypatch: pytest.Monke
 
         return _R()
 
-    import src.cli as cli_mod
+    import podsave.cli as cli_mod
 
     monkeypatch.setattr(cli_mod.subprocess, "run", _fake_run)
     monkeypatch.setenv("EDITOR", "nvim")
@@ -93,7 +93,7 @@ def test_queue_edit_falls_back_to_open_on_no_editor(
 
         return _R()
 
-    import src.cli as cli_mod
+    import podsave.cli as cli_mod
 
     monkeypatch.setattr(cli_mod.subprocess, "run", _fake_run)
     monkeypatch.delenv("EDITOR", raising=False)

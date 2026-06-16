@@ -5,26 +5,26 @@
 ## Layers
 
 ```
-┌─ CLI (src/cli.py, Typer) ─────────────────────────────────┐
+┌─ CLI (src/podsave/cli.py, Typer) ─────────────────────────────────┐
 │   init · save · drain · retry · queue {add,list,edit,…}   │
 │   handle_errors → clean exit-1 messages                   │
-├─ Pipeline (src/pipeline/) ────────────────────────────────┤
+├─ Pipeline (src/podsave/pipeline/) ────────────────────────────────┤
 │   download.probe      yt-dlp --dump-single-json           │
 │   download.download_audio  yt-dlp -f bestaudio            │
 │   transcribe.transcribe    AssemblyAI universal-3-pro     │
 │   extract.extract          OpenAI structured-output parse │
 │   render.render_note       Obsidian-flavored markdown     │
-├─ Storage (src/storage/) ──────────────────────────────────┤
+├─ Storage (src/podsave/storage/) ──────────────────────────────────┤
 │   config   TOML + env-var overrides                       │
 │   queue    plain text, one URL per line                   │
 │   transcripts  JSON + .meta.json sidecar per video_id     │
 │   log       append-only JSONL of RunRecords               │
 │   paths    $PODSAVE_HOME-aware path helpers               │
-├─ Utils (src/utils/) ──────────────────────────────────────┤
+├─ Utils (src/podsave/utils/) ──────────────────────────────────────┤
 │   youtube  URL parsing, playlist detection, video_id      │
 │   cost     hard-coded rate constants, estimate() helper   │
 │   filenames  NFC-safe filenames + versioned collision     │
-├─ Models (src/models.py) ──────────────────────────────────┤
+├─ Models (src/podsave/models.py) ──────────────────────────────────┤
 │   VideoMeta, Insight, ExtractionResult, RunRecord,        │
 │   CostEstimate — shared across all layers                 │
 └───────────────────────────────────────────────────────────┘
@@ -79,7 +79,7 @@ External exceptions (`subprocess.CalledProcessError`, `FileNotFoundError`, `asse
 
 ## Cost model
 
-All rates are hard-coded in `src/utils/cost.py`:
+All rates are hard-coded in `src/podsave/utils/cost.py`:
 
 - AssemblyAI `universal-3-pro`: `$0.21/hr`
 - OpenAI `gpt-5.4-mini`: `$0.75/M input`, `$4.50/M output`

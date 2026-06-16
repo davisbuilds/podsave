@@ -5,10 +5,10 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from src.cli import app
-from src.models import ExtractionResult, Insight, VideoMeta
-from src.pipeline import render
-from src.storage import paths
+from podsave.cli import app
+from podsave.models import ExtractionResult, Insight, VideoMeta
+from podsave.pipeline import render
+from podsave.storage import paths
 
 runner = CliRunner()
 

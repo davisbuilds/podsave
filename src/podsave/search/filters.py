@@ -5,10 +5,10 @@ from __future__ import annotations
 import re
 from datetime import date, timedelta
 
-from src.errors import PodsaveError
-from src.search.callout import Callout
-from src.search.index import Note
-from src.utils.filenames import focus_slug
+from podsave.errors import PodsaveError
+from podsave.search.callout import Callout
+from podsave.search.index import Note
+from podsave.utils.filenames import focus_slug
 
 _RELATIVE_SINCE = re.compile(r"^(\d+)([dwmy])$")
 _RELATIVE_DAYS = {"d": 1, "w": 7, "m": 30, "y": 365}

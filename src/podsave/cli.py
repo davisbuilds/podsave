@@ -15,21 +15,21 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from src.errors import EmptyExtractionError, PodsaveError, TranscriptNotFoundError
-from src.models import CostEstimate, ExtractionResult, RunRecord, VideoMeta
-from src.pipeline import download, extract, render, transcribe
-from src.search import filters as search_filters
-from src.search import index as search_index
-from src.search import ranker as search_ranker
-from src.search import render as search_render
-from src.search.matcher import GrepMatcher
-from src.storage import config as config_store
-from src.storage import log as log_store
-from src.storage import paths
-from src.storage import queue as queue_store
-from src.storage import transcripts as transcript_store
-from src.utils import cost as cost_utils
-from src.utils import filenames
+from podsave.errors import EmptyExtractionError, PodsaveError, TranscriptNotFoundError
+from podsave.models import CostEstimate, ExtractionResult, RunRecord, VideoMeta
+from podsave.pipeline import download, extract, render, transcribe
+from podsave.search import filters as search_filters
+from podsave.search import index as search_index
+from podsave.search import ranker as search_ranker
+from podsave.search import render as search_render
+from podsave.search.matcher import GrepMatcher
+from podsave.storage import config as config_store
+from podsave.storage import log as log_store
+from podsave.storage import paths
+from podsave.storage import queue as queue_store
+from podsave.storage import transcripts as transcript_store
+from podsave.utils import cost as cost_utils
+from podsave.utils import filenames
 
 app = typer.Typer(
     add_completion=False,

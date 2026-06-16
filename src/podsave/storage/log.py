@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from src.models import RunRecord
-from src.storage import paths
+from podsave.models import RunRecord
+from podsave.storage import paths
 
 
 def _ensure() -> None:

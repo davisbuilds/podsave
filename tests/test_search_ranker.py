@@ -3,10 +3,10 @@ from __future__ import annotations
 from datetime import date, datetime
 from pathlib import Path
 
-from src.search import ranker
-from src.search.callout import Callout
-from src.search.index import Note
-from src.search.matcher import Match
+from podsave.search import ranker
+from podsave.search.callout import Callout
+from podsave.search.index import Note
+from podsave.search.matcher import Match
 
 
 def _note(processed: datetime) -> Note:

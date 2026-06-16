@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from src.models import ExtractionResult, Insight, VideoMeta
-from src.utils.cost import format_duration
-from src.utils.filenames import focus_slug
-from src.utils.youtube import timestamp_url
+from podsave.models import ExtractionResult, Insight, VideoMeta
+from podsave.utils.cost import format_duration
+from podsave.utils.filenames import focus_slug
+from podsave.utils.youtube import timestamp_url
 
 _CALLOUT_TYPE_BY_KIND = {
     "insight": "note",

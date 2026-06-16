@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from src.errors import ConfigInvalidError, ConfigMissingError
-from src.storage import config as config_store
-from src.storage import paths
+from podsave.errors import ConfigInvalidError, ConfigMissingError
+from podsave.storage import config as config_store
+from podsave.storage import paths
 
 
 def test_load_config_missing_file_raises(podsave_home: Path) -> None:

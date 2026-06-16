@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from src.errors import TranscriptNotFoundError
-from src.models import VideoMeta
-from src.storage import transcripts
+from podsave.errors import TranscriptNotFoundError
+from podsave.models import VideoMeta
+from podsave.storage import transcripts
 
 
 def _meta(video_id: str = "abc123") -> VideoMeta:

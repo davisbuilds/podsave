@@ -5,9 +5,9 @@ import time
 from datetime import date, datetime
 from pathlib import Path
 
-from src.models import ExtractionResult, Insight, VideoMeta
-from src.pipeline import render
-from src.search import index
+from podsave.models import ExtractionResult, Insight, VideoMeta
+from podsave.pipeline import render
+from podsave.search import index
 
 
 def _render_fixture_note(i: int) -> str:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from urllib.parse import parse_qs, urlparse
 
-from src.errors import InvalidYouTubeURLError, PlaylistURLError
+from podsave.errors import InvalidYouTubeURLError, PlaylistURLError
 
 _VIDEO_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 _YT_HOSTS = {

@@ -9,11 +9,11 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-from src.search.callout import Callout
-from src.search.index import Note
-from src.search.matcher import Match
-from src.utils.filenames import focus_slug, next_version_path
-from src.utils.youtube import timestamp_url
+from podsave.search.callout import Callout
+from podsave.search.index import Note
+from podsave.search.matcher import Match
+from podsave.utils.filenames import focus_slug, next_version_path
+from podsave.utils.youtube import timestamp_url
 
 _CALLOUT_TYPE_BY_KIND = {"insight": "note", "quote": "quote", "spicy_take": "warning"}
 _KIND_LABEL = {"insight": "Insight", "quote": "Quote", "spicy_take": "Spicy take"}

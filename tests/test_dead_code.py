@@ -37,16 +37,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 # Where first-party source lives, and the base directory module names are
-# computed against. For a `src/`-as-package layout these differ from a
-# `src/<pkg>/` layout — keep them in sync with the import style used in code.
-SRC_DIR = ROOT / "src"
-MODULE_BASE = ROOT  # module names are relative to here -> "src.pipeline.extract"
-IMPORT_ROOT = "src"  # first-party import prefix
+# computed against. Keep these in sync with the src-layout import style.
+SRC_DIR = ROOT / "src" / "podsave"
+MODULE_BASE = ROOT / "src"  # module names are relative to here -> "podsave.pipeline.extract"
+IMPORT_ROOT = "podsave"  # first-party import prefix
 
 # Directories scanned for *references* in addition to source: any place a
 # symbol might legitimately be used. .py files are parsed (AST); other files
 # are searched as text so symbols used only in templates/prompts/configs aren't
-# flagged (e.g. LLM prompt markdown under src/pipeline/prompts/).
+# flagged (e.g. LLM prompt markdown under src/podsave/pipeline/prompts/).
 REFERENCE_PY_DIRS = [SRC_DIR, ROOT / "tests"]
 REFERENCE_TEXT_FILES = [ROOT / "pyproject.toml", *SRC_DIR.rglob("*.md")]
 
@@ -54,7 +53,7 @@ SKIP_DIR_NAMES = {"__pycache__", ".venv", ".git", ".mypy_cache", ".ruff_cache"}
 
 # Modules invoked via console-scripts / frameworks, never imported by name.
 MODULE_EXCEPTIONS = {
-    "src.cli",  # console_scripts entry point (src.cli:main)
+    "podsave.cli",  # console_scripts entry point (podsave.cli:main)
 }
 
 # Public symbols intentionally unreferenced internally (external API, reflection,
@@ -62,7 +61,7 @@ MODULE_EXCEPTIONS = {
 SYMBOL_EXCEPTIONS: set[str] = {
     # Protocol seam for a future EmbeddingMatcher (see module docstring + ROADMAP);
     # GrepMatcher implements it structurally, so it has no internal call site.
-    "src.search.matcher::Matcher",
+    "podsave.search.matcher::Matcher",
 }
 
 # Decorator attribute names that mark a function as framework-invoked and thus
@@ -88,7 +87,10 @@ def _iter_py_files(root: Path) -> list[Path]:
 
 
 def _module_name(path: Path) -> str:
-    rel = path.relative_to(MODULE_BASE).with_suffix("")
+    try:
+        rel = path.relative_to(MODULE_BASE).with_suffix("")
+    except ValueError:
+        rel = path.relative_to(ROOT).with_suffix("")
     parts = list(rel.parts)
     if parts and parts[-1] == "__init__":
         parts = parts[:-1]

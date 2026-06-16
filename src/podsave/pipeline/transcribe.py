@@ -8,7 +8,7 @@ from typing import Any
 import assemblyai as aai
 from rich.console import Console
 
-from src.errors import TranscriptionError
+from podsave.errors import TranscriptionError
 
 
 def transcribe(audio_path: Path, api_key: str, *, console: Console | None = None) -> dict[str, Any]:

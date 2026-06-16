@@ -29,8 +29,8 @@ The project uses `uv` for dependency management.
 
 ## Working Conventions
 
-- **Pydantic models live in `src/models.py`** — don't scatter data shapes across modules.
-- **Prompts are versioned files** in `src/pipeline/prompts/<name>_v<N>.md`. Bump the version when the prompt changes; `prompt_version` lands in note frontmatter.
+- **Pydantic models live in `src/podsave/models.py`** — don't scatter data shapes across modules.
+- **Prompts are versioned files** in `src/podsave/pipeline/prompts/<name>_v<N>.md`. Bump the version when the prompt changes; `prompt_version` lands in note frontmatter.
 - **Quote timestamps**: snap to word-level boundaries, not raw utterance starts — keeps long monologue quotes from linking to the speaker's first word minutes earlier.
 
 ## Testing

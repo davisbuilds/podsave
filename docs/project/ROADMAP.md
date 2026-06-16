@@ -30,7 +30,7 @@ Ordered by my lean. Pick whichever pulls most.
 
 - **Why**: cheapest test of "is the corpus useful in aggregate?" — you stop just *making* notes and start *consuming* them. Stops being the question of "is the pipeline good" and becomes "is the curated vault valuable."
 - **Synergy with `~/Dev/feed`**: gives podsave a digest counterpart to your weekly newsletter brief. Opens the cross-source door (item #4 below) without committing to it yet.
-- **Scope**: ~1-day shipping target. New `src/digest/` subpackage, one OpenAI call, render to a new Obsidian template. Reuses search's filter pipeline.
+- **Scope**: ~1-day shipping target. New `src/podsave/digest/` subpackage, one OpenAI call, render to a new Obsidian template. Reuses search's filter pipeline.
 - **My lean**: do this next.
 
 ### 2. Pipeline polish sweep (`v1.3`)
