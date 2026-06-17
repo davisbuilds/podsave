@@ -20,3 +20,6 @@ Thumbs.db
 
 # Symlink to ~/.podsave/queue.txt for convenient in-editor editing
 queue.txt
+
+# Local-only archive (completed plans, research, sessions kept out of the public tree)
+**/archive/
