@@ -6,11 +6,11 @@ authors = [{name = "davisbuilds"}]
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-  "typer>=0.24.0,<1.0.0",
+  "typer>=0.26.8,<1.0.0",
   "rich>=15.0.0,<16.0.0",
   "pydantic>=2.13.0,<3.0.0",
   "yt-dlp>=2026.3.0",
-  "assemblyai>=0.63.0,<1.0.0",
+  "assemblyai>=0.64.21,<1.0.0",
   "openai>=2.32.0,<3.0.0",
   "pyyaml>=6.0,<7.0",
 ]
