@@ -34,7 +34,7 @@ wheels = [
 
 [[package]]
 name = "assemblyai"
-version = "0.64.21"
+version = "0.64.26"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -43,9 +43,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5f/2e/51726cb411af2972336c754742234a8113401d5e047afbe9395bb414378c/assemblyai-0.64.21.tar.gz", hash = "sha256:51c650c601c8be4bad8a20f3bbc3619f6f914fb6bc66ed6b867eb7c80b341873", size = 93156, upload-time = "2026-06-16T22:13:43.301Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/e2/1312ed899cc6f8690bba3159c0bdf1cacc6127052cdbb1e9a5947e052c41/assemblyai-0.64.26.tar.gz", hash = "sha256:7ca174b09f8505f4e565c8de4855486e6dc5511b3db24a4cc02f798db9dca16e", size = 94610, upload-time = "2026-07-07T22:51:54.288Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/e1/a107d6824dc80894fcc1b6c5324a638994509955d50d2ca92c107cc02b8c/assemblyai-0.64.21-py3-none-any.whl", hash = "sha256:3604635990ec4d95878879e816d4300df13e6507c566054d2cee39a6c595ebae", size = 81832, upload-time = "2026-06-16T22:13:41.937Z" },
+    { url = "https://files.pythonhosted.org/packages/3b/9d/192cb56f4d58a6d22b3fb42d9342ae1080b3d3d0efd2ed5a29a1b9fcbd62/assemblyai-0.64.26-py3-none-any.whl", hash = "sha256:9f98a28695eea93455f0902130eec90efde27b5cf018643f39c4f3d1df1718ce", size = 83498, upload-time = "2026-07-07T22:51:53.321Z" },
 ]
 
 [[package]]
@@ -245,7 +245,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "assemblyai", specifier = ">=0.64.21,<1.0.0" },
+    { name = "assemblyai", specifier = ">=0.64.26,<1.0.0" },
     { name = "openai", specifier = ">=2.32.0,<3.0.0" },
     { name = "pydantic", specifier = ">=2.13.0,<3.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.0,<10.0.0" },
@@ -253,7 +253,7 @@ requires-dist = [
     { name = "rich", specifier = ">=15.0.0,<16.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.15.0,<1.0.0" },
     { name = "typer", specifier = ">=0.26.8,<1.0.0" },
-    { name = "yt-dlp", specifier = ">=2026.3.0" },
+    { name = "yt-dlp", specifier = ">=2026.7.4" },
 ]
 provides-extras = ["dev"]
 
@@ -520,9 +520,9 @@ wheels = [
 
 [[package]]
 name = "yt-dlp"
-version = "2026.6.9"
+version = "2026.7.4"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/88/a4/1b0979d28f87774bb67fbbc66bce44f9dd1aa0e547a99e22985fac945c33/yt_dlp-2026.6.9.tar.gz", hash = "sha256:d50fcb95f48d61bedde33e408c1881d4c279e51c31354a599ce09e96ba0f4b86", size = 3030590, upload-time = "2026-06-09T23:27:14.831Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/47/c5/9972af4b472b0d55badf841ebafd2f98944cb0ae0f46e11d01f363ea5b91/yt_dlp-2026.7.4.tar.gz", hash = "sha256:b094813404f87a9dd2186f00815231df32e5fd8a5403be0f807b3bb2d21a4432", size = 3049326, upload-time = "2026-07-04T22:42:14.837Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/ee/188a3dadf9dfdac713243521f919feca1cd091d4358c9ea7e8ebb710a7cc/yt_dlp-2026.6.9-py3-none-any.whl", hash = "sha256:442ba4c75724b9496144c8434b617962ee08d0ee7c26ec663848fe9b78d5a3e4", size = 3169035, upload-time = "2026-06-09T23:27:12.58Z" },
+    { url = "https://files.pythonhosted.org/packages/f9/8a/cd4c9b02c10c563adfe78118310129641900e1cd6de888cfae2452072696/yt_dlp-2026.7.4-py3-none-any.whl", hash = "sha256:f11f2b11d5a8ac4059f9bdf29fa4407dc7c6bb00c5097e95ca22a7a9db518266", size = 3184705, upload-time = "2026-07-04T22:42:12.989Z" },
 ]
