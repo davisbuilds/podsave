@@ -23,7 +23,7 @@ Result:
 ## Merge Strategy
 
 Merge commits and rebase merges are both allowed; squash merges are disabled. This
-is the portfolio default profile (see `ops/agent-docs/capabilities/repo-conventions-house-style.md`).
+is this repository's standing merge policy.
 
 - **Default — merge commit.** Preserves the PR as a discoverable boundary in `main`'s history. Best when the PR contains multiple meaningful commits worth keeping addressable individually.
 - **Rebase merge.** Use when the PR's commits are clean and the linear history reads better without an extra merge node. Avoid if the PR's commits are noisy (WIP, fixups) — clean them up locally first.
