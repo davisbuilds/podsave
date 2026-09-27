@@ -1,6 +1,6 @@
 # podsave v1 — Spec
 
-The shipped spec for v1. For the evolving plan, deviations, and open questions, see `docs/plans/2026-04-23-podsave-v1.md`.
+The shipped v1 scope and constraints are recorded here. Current direction is in [Roadmap](ROADMAP.md); unresolved candidates are in [Backlog](BACKLOG.md).
 
 ## Problem
 
