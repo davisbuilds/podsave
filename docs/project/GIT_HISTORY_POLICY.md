@@ -1,6 +1,6 @@
 # Git History and Branch Hygiene
 
-Last updated: July 7, 2026
+Last updated: September 27, 2026
 
 ## Repository Merge Settings
 
@@ -33,6 +33,27 @@ is this repository's standing merge policy.
   Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
   ```
 
+## Release Commit Classification
+
+Release Please reads retained non-merge commits, so every PR commit must use
+`type(scope): description` (scope optional). Allowed types: `feat`, `fix`, `perf`,
+`refactor`, `docs`, `test`, `build`, `ci`, `chore`, `style`, and `revert`.
+CI checks the PR's commits against its base; merge nodes are excluded. PR titles
+should follow the same convention, but a valid title cannot rescue invalid
+retained commits. Reword/squash local WIP commits before delivery.
+
+Use `feat` for new consumer behavior, `fix` for corrections, and `perf` for
+performance improvements. Add `!` before `:` and migration details in a
+`BREAKING CHANGE:` body/footer for incompatible CLI, config, state, or note-format
+changes. Syntax checks do not establish compatibility intent. Dependencies that
+fix a consumer bug need an appropriately classified commit or explicit release
+notes; `chore(deps)` alone does not release.
+
+Pre-1.0 features/breaking changes bump minor and fixes bump patch. See
+[Operations](../system/OPERATIONS.md#releases) for version sources, bootstrap,
+release review, and recovery. Release PRs still require review and green CI;
+merging one permits the subsequent tag/GitHub Release, not registry publishing.
+
 ## CI Gates
 
 GitHub Actions workflow: `.github/workflows/ci.yml`.
@@ -41,6 +62,7 @@ Quality gates before merge (also the pre-push expectation locally):
 
 - `uv run ruff check .`
 - `uv run ruff format --check .`
+- `python3 scripts/check_commit_subjects.py origin/main` (PR commits)
 - `uv run pytest -q`
 
 Integration tests behind `PODSAVE_INTEGRATION=1` hit real APIs and cost money — run manually before shipping pipeline changes; not part of the gate.

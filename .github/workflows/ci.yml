@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -35,10 +36,16 @@ jobs:
           version: "0.11.3"
 
       - name: Install dependencies (with dev extras)
-        run: uv sync --frozen --extra dev
+        run: uv sync --locked --extra dev
 
       - name: Ruff lint
         run: uv run ruff check .
+
+      - name: Classify PR commit subjects
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python scripts/check_commit_subjects.py "$BASE_SHA"
 
       - name: Ruff format check
         run: uv run ruff format --check .
@@ -67,7 +74,7 @@ jobs:
           version: "0.11.3"
 
       - name: Install dependencies (with dev extras)
-        run: uv sync --frozen --extra dev
+        run: uv sync --locked --extra dev
 
       - name: Run tests
         run: uv run python -m pytest -q

@@ -12,7 +12,7 @@ yt-dlp audio → AssemblyAI diarized STT → OpenAI structured extraction → Ob
 - `docs/system/FEATURES.md` — every CLI command (`save`/`drain`/`retry`/`queue`/`stats`/`doctor`/`search`), output format, frontmatter spec, callout mapping, guards/limits, what's NOT supported in v1.
 - `docs/system/OPERATIONS.md` — setup, config/env overrides, paid pipeline safety, commands, CI/local verification, external state, recovery, troubleshooting.
 - `docs/project/SPEC.md` — v1 problem framing, in/out scope, user flow, non-functional requirements, dogfood exit criteria.
-- `docs/project/ROADMAP.md` — shipped versions through v2.0, near-term plan (e.g. v2.2 digest mode).
+- `docs/project/ROADMAP.md` — shipped feature milestones through v2.0 (separate from package SemVer), near-term plan (e.g. v2.2 digest mode).
 
 ## Key Commands
 
