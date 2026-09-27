@@ -105,7 +105,8 @@ The release unit is the Python `podsave` CLI, currently consumed from a Git
 checkout with `uv sync` and the local launcher or installed console entrypoint.
 `pyproject.toml` owns its package version; Release Please keeps the matching
 `podsave` entry in `uv.lock`, `.release-please-manifest.json`, and `CHANGELOG.md`
-in sync. `./podsave version` reads the installed package metadata. Releases create `vX.Y.Z` tags and GitHub Releases with source archives;
+in sync. `./podsave version` reads the installed package metadata. Releases
+create `vX.Y.Z` tags and GitHub Releases with source archives;
 there is no PyPI upload or automatic deployment.
 
 Bootstrap starts after commit `e12f5fc774078ff597c269f1a0449ec78fc5ce28`.
@@ -138,7 +139,9 @@ Review the generated release PR's version files, changelog, PR body (also used
 for published notes), migration guidance, and green CI before merging it. That
 merge authorizes tag/release creation after its `main` CI passes. This setup does
 not authorize automatically merging release PRs. A green no-op means no
-releasable changes, not a completed release. For the first release, Release Please synthesizes a previous `v0.1.0` tag
+releasable changes, not a completed release.
+
+For the first release, Release Please synthesizes a previous `v0.1.0` tag
 from the manifest in comparison links despite that tag not existing. Before
 merging, replace that comparison boundary with the real bootstrap SHA in both
 `CHANGELOG.md` and the release PR body (published notes). Do not create a
