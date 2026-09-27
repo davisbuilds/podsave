@@ -97,6 +97,10 @@ CI jobs:
   `uv run python -m pytest -q tests/test_dead_code.py`
 - Test: `uv run python -m pytest -q`
 
+The same CI workflow classifies retained non-merge commits on PRs and direct
+main pushes (the actual `before..after` range). Invalid, missing, zero, or
+non-forward revisions fail closed, preventing a successful release-gating run.
+
 CI runs on Python 3.14 with `uv sync --locked --extra dev`.
 
 ## Releases

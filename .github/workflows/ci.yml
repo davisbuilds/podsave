@@ -47,6 +47,13 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: python scripts/check_commit_subjects.py "$BASE_SHA"
 
+      - name: Classify pushed main commit subjects
+        if: github.event_name == 'push'
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.event.after }}
+        run: python scripts/check_commit_subjects.py "$BASE_SHA" "$HEAD_SHA"
+
       - name: Ruff format check
         run: uv run ruff format --check .
 

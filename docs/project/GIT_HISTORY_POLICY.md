@@ -38,7 +38,9 @@ is this repository's standing merge policy.
 Release Please reads retained non-merge commits, so every PR commit must use
 `type(scope): description` (scope optional). Allowed types: `feat`, `fix`, `perf`,
 `refactor`, `docs`, `test`, `build`, `ci`, `chore`, `style`, and `revert`.
-CI checks the PR's commits against its base; merge nodes are excluded. PR titles
+CI checks the PR's commits against its base and each main push's actual
+`before..after` range; merge nodes are excluded. Empty, zero, unavailable, or
+non-forward revisions fail closed rather than scanning historical commits. PR titles
 should follow the same convention, but a valid title cannot rescue invalid
 retained commits. Reword/squash local WIP commits before delivery.
 
