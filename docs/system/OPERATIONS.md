@@ -111,10 +111,14 @@ there is no PyPI upload or automatic deployment.
 Bootstrap starts after commit `e12f5fc774078ff597c269f1a0449ec78fc5ce28`.
 On 2026-09-27, both package files were `0.1.0` and GitHub had no tags/releases.
 The manifest uses `0.1.0` as an unreleased package baseline, not proof of a past
-release. Roadmap labels such as v1 and v2.0 are feature milestones, independent
+release. With no prior tag, the Python strategy proposes an initial `0.1.0`
+release when a future feature/fix/performance commit qualifies; the automation
+setup alone is a no-op. Its initial changelog has commit links and no previous-tag
+comparison link. After that first release, normal patch/minor bumps apply.
+Roadmap labels such as v1 and v2.0 are feature milestones, independent
 of package SemVer. Earlier work is not replayed into fictional releases.
 
-For `0.x`, fixes/performance changes bump patch; new compatible features and
+After the initial release, for `0.x`, fixes/performance changes bump patch; new compatible features and
 breaking changes bump minor. Mark incompatibility with `!` or `BREAKING CHANGE:`
 and document migration steps. Choosing `1.0.0` is an explicit compatibility
 commitment; do not infer it from a roadmap milestone. Normal docs, tests, CI,

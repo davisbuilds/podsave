@@ -49,7 +49,8 @@ changes. Syntax checks do not establish compatibility intent. Dependencies that
 fix a consumer bug need an appropriately classified commit or explicit release
 notes; `chore(deps)` alone does not release.
 
-Pre-1.0 features/breaking changes bump minor and fixes bump patch. See
+After the initial `0.1.0` release, pre-1.0 features/breaking changes bump minor
+and fixes bump patch. See
 [Operations](../system/OPERATIONS.md#releases) for version sources, bootstrap,
 release review, and recovery. Release PRs still require review and green CI;
 merging one permits the subsequent tag/GitHub Release, not registry publishing.
