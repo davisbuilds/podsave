@@ -4,12 +4,16 @@ topic: roadmap
 stage: living
 status: open
 source: conversation
-last_updated: 2026-04-26
+last_updated: 2026-09-27
 ---
 
 # podsave Roadmap
 
 A living menu of what's shipped, what's next, and what's deliberately deferred. Read top-to-bottom in a fresh session and pick up where it makes sense.
+
+The v1/v1.1/v1.2/v2.0 labels below are feature milestones, not package releases.
+Package SemVer starts from the actual `0.1.0` metadata; see
+[release operations](../system/OPERATIONS.md#releases).
 
 ## Where we are today (shipped)
 
@@ -18,7 +22,12 @@ A living menu of what's shipped, what's next, and what's deliberately deferred. 
 - **v1.2** — Focused extraction: `--focus TEXT` on `save` and `retry`. Focused notes land as separate files with `(focus: <slug>)` in the basename, `focus:` in frontmatter, and a `podsave/<slug>` sub-tag. Refuses to write on zero items (logs a `failed` RunRecord and exits 1).
 - **v2.0** — Vault search: `podsave search QUERY [--kind --channel --focus --since --limit --write]`. Callout-level results with terminal panels by default; `--write` drops a real Obsidian MOC note into `<vault>/Callouts/` with `[[wikilinks]]` back to source notes.
 
-Tests: ~200 passing, ruff clean, pre-push checks `uv run ruff check . && uv run pytest -q`.
+- **Release automation** — CI-gated Release Please proposes package version and
+  changelog PRs, then tags merged releases after main CI succeeds. No registry
+  publication; historical feature milestones remain separate from package versions.
+
+Routine checks: ruff lint/format, Conventional Commit classification for PR commits,
+and the offline pytest suite. See Operations for exact commands.
 
 ## Near-term (next 1–3 sessions)
 
@@ -116,7 +125,7 @@ Today the project explicitly refuses everything except YouTube (see `SPEC.md`). 
 
 Small wins that could be done anytime:
 
-- **CI** — github-actions workflow running `ruff check` + `pytest` on push; badges on README.
+- **CI badge** — CI already runs lint/format, dead-code, commit classification, and pytest; add a README badge when useful.
 - **Demo asset** — animated terminal capture (asciinema or vhs) of `save → search → digest`; embed in README.
 - **MIT license / contributing notes** — if/when you decide to publicize more.
 - **Type-hint coverage / mypy strict** — current code is type-hinted but mypy isn't enforced; could add as a pre-push step.

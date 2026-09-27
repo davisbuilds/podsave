@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -30,15 +31,34 @@ jobs:
           python-version: "3.14"
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v8
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.3"
 
       - name: Install dependencies (with dev extras)
-        run: uv sync --frozen --extra dev
+        run: uv sync --locked --extra dev
 
       - name: Ruff lint
         run: uv run ruff check .
+
+      - name: Classify PR commit subjects
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python scripts/check_commit_subjects.py "$BASE_SHA"
+
+      - name: Classify pushed main commit subjects
+        if: github.event_name == 'push'
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.event.after }}
+        run: python scripts/check_commit_subjects.py "$BASE_SHA" "$HEAD_SHA"
+
+      - name: Classify complete unreleased main history
+        if: github.event_name == 'push'
+        env:
+          HEAD_SHA: ${{ github.event.after }}
+        run: python scripts/check_commit_subjects.py --unreleased "$HEAD_SHA"
 
       - name: Ruff format check
         run: uv run ruff format --check .
@@ -62,12 +82,12 @@ jobs:
           python-version: "3.14"
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v8
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.3"
 
       - name: Install dependencies (with dev extras)
-        run: uv sync --frozen --extra dev
+        run: uv sync --locked --extra dev
 
       - name: Run tests
         run: uv run python -m pytest -q
