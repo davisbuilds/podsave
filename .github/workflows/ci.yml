@@ -54,6 +54,12 @@ jobs:
           HEAD_SHA: ${{ github.event.after }}
         run: python scripts/check_commit_subjects.py "$BASE_SHA" "$HEAD_SHA"
 
+      - name: Classify complete unreleased main history
+        if: github.event_name == 'push'
+        env:
+          HEAD_SHA: ${{ github.event.after }}
+        run: python scripts/check_commit_subjects.py --unreleased "$HEAD_SHA"
+
       - name: Ruff format check
         run: uv run ruff format --check .
 

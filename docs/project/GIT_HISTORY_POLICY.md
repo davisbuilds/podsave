@@ -40,7 +40,11 @@ Release Please reads retained non-merge commits, so every PR commit must use
 `refactor`, `docs`, `test`, `build`, `ci`, `chore`, `style`, and `revert`.
 CI checks the PR's commits against its base and each main push's actual
 `before..after` range; merge nodes are excluded. Empty, zero, unavailable, or
-non-forward revisions fail closed rather than scanning historical commits. PR titles
+non-forward revisions fail closed rather than guessing a range. Main CI also
+classifies the full unreleased history after the real manifest-version tag, or
+bootstrap when that tag is absent, so a failed earlier main push remains blocking.
+Do not rewrite published history or silently advance the boundary to clear a
+landed invalid commit; see Operations for owner-reviewed recovery. PR titles
 should follow the same convention, but a valid title cannot rescue invalid
 retained commits. Reword/squash local WIP commits before delivery.
 

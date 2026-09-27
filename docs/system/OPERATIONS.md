@@ -98,8 +98,16 @@ CI jobs:
 - Test: `uv run python -m pytest -q`
 
 The same CI workflow classifies retained non-merge commits on PRs and direct
-main pushes (the actual `before..after` range). Invalid, missing, zero, or
-non-forward revisions fail closed, preventing a successful release-gating run.
+main pushes (the actual `before..after` range). Main CI also checks the complete
+unreleased non-merge history: after the real `v<manifest version>` tag if present,
+otherwise after the configured bootstrap SHA. Both boundaries must resolve to
+ancestors of the tested head. A tag at the head legitimately has no unreleased
+commits; an empty push range is rejected. Missing/invalid metadata or revisions,
+zero revisions, and non-forward histories fail closed. The release check has no
+fixed commit-count limit and follows the release boundary as real tags advance.
+If a release PR advances the manifest before its tag exists, the bootstrap
+fallback checks a broader range conservatively. A later valid push cannot clear
+an earlier unclassified unreleased commit whose CI failed.
 
 CI runs on Python 3.14 with `uv sync --locked --extra dev`.
 
@@ -150,6 +158,13 @@ from the manifest in comparison links despite that tag not existing. Before
 merging, replace that comparison boundary with the real bootstrap SHA in both
 `CHANGELOG.md` and the release PR body (published notes). Do not create a
 fictitious previous tag. Recheck both after a bot refresh.
+
+If an unclassified commit has already landed on main, keep release writes paused.
+A later valid commit or retry does not erase it. Inspect the entire unreleased
+range and compatibility intent; the owner must approve any recovery boundary or
+classification exception in a separately reviewed change, with release notes
+accounting for every skipped consumer change. Do not silently advance bootstrap,
+create a fictitious tag, or rewrite published history to clear the gate.
 
 To install a released checkout, fetch tags, check out the selected `vX.Y.Z`, and
 run `uv sync --locked --extra dev`. For recovery, pause the release workflow and
