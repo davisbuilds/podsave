@@ -111,14 +111,13 @@ there is no PyPI upload or automatic deployment.
 Bootstrap starts after commit `e12f5fc774078ff597c269f1a0449ec78fc5ce28`.
 On 2026-09-27, both package files were `0.1.0` and GitHub had no tags/releases.
 The manifest uses `0.1.0` as an unreleased package baseline, not proof of a past
-release. With no prior tag, the Python strategy proposes an initial `0.1.0`
-release when a future feature/fix/performance commit qualifies; the automation
-setup alone is a no-op. Its initial changelog has commit links and no previous-tag
-comparison link. After that first release, normal patch/minor bumps apply.
-Roadmap labels such as v1 and v2.0 are feature milestones, independent
+release. Manifest mode uses that nonzero baseline for version calculation even
+without a real tag: the first fix/performance change proposes `0.1.1`, and the
+first feature/breaking change proposes `0.2.0`. The automation setup alone is a
+no-op. Roadmap labels such as v1 and v2.0 are feature milestones, independent
 of package SemVer. Earlier work is not replayed into fictional releases.
 
-After the initial release, for `0.x`, fixes/performance changes bump patch; new compatible features and
+For `0.x`, fixes/performance changes bump patch; new compatible features and
 breaking changes bump minor. Mark incompatibility with `!` or `BREAKING CHANGE:`
 and document migration steps. Choosing `1.0.0` is an explicit compatibility
 commitment; do not infer it from a roadmap milestone. Normal docs, tests, CI,
@@ -139,8 +138,11 @@ Review the generated release PR's version files, changelog, PR body (also used
 for published notes), migration guidance, and green CI before merging it. That
 merge authorizes tag/release creation after its `main` CI passes. This setup does
 not authorize automatically merging release PRs. A green no-op means no
-releasable changes, not a completed release. For the first release, use the real
-bootstrap commit as a comparison boundary, never a fictitious previous tag.
+releasable changes, not a completed release. For the first release, Release Please synthesizes a previous `v0.1.0` tag
+from the manifest in comparison links despite that tag not existing. Before
+merging, replace that comparison boundary with the real bootstrap SHA in both
+`CHANGELOG.md` and the release PR body (published notes). Do not create a
+fictitious previous tag. Recheck both after a bot refresh.
 
 To install a released checkout, fetch tags, check out the selected `vX.Y.Z`, and
 run `uv sync --locked --extra dev`. For recovery, pause the release workflow and
