@@ -121,7 +121,7 @@ Vault output defaults to `~/obsd/Resources/Podsave/`. Override it in
 ```text
 src/podsave/           Typer CLI, pipeline, integrations, extraction, vault output
 tests/         pytest suite
-docs/          system, project, and plan docs
+docs/          system and project docs
 podsave        local launcher
 queue.txt      project symlink to ~/.podsave/queue.txt after init
 ```
@@ -134,8 +134,7 @@ queue.txt      project symlink to ~/.podsave/queue.txt after init
 - Operations and releases: [docs/system/OPERATIONS.md](docs/system/OPERATIONS.md)
 - Contribution and commit policy: [docs/project/GIT_HISTORY_POLICY.md](docs/project/GIT_HISTORY_POLICY.md)
 - Roadmap: [docs/project/ROADMAP.md](docs/project/ROADMAP.md)
-- Plans: [docs/plans/](docs/plans/)
-- Original full build plan: [docs/plans/2026-04-23-podsave-v1.md](docs/plans/2026-04-23-podsave-v1.md)
+- Contributor guidance: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Current Boundaries
 
