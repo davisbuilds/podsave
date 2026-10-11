@@ -71,12 +71,20 @@ Quality gates before merge (also the pre-push expectation locally):
 
 Integration tests behind `PODSAVE_INTEGRATION=1` hit real APIs and cost money — run manually before shipping pipeline changes; not part of the gate.
 
-## Branch Protection Status
+## Branch Protection
 
-This is a public repository, so the branch-protection APIs are available. No
-required reviews or status checks are enforced as branch rules yet — CI gates
-below are enforced by convention. Enable `required_conversation_resolution` when
-the review flow warrants it.
+Verified 2026-10-11 with
+`gh api repos/davisbuilds/podsave/branches/main/protection`:
+`main` requires these GitHub Actions checks before merge:
+
+- `Lint & dead code` (CI)
+- `Test (pytest)` (CI)
+- `check` (Publication Hygiene)
+
+Branches need not be up to date with `main`, no reviews are required, and admins
+are not enforced. Required checks match job names, so rename a job and its entry
+in the protection rule together. `Workflow Security Audit` is path-filtered and
+deliberately not required: a required check that never runs blocks every merge.
 
 ## Recommended Ongoing Hygiene
 
