@@ -28,6 +28,15 @@ promises.
 
 ## Open
 
+### Remove the certifi release-quarantine exception (revisit 2026-10-28)
+
+- **What:** `pyproject.toml` sets `exclude-newer-package = { certifi = "2026-10-21T00:00:00Z" }` so certifi
+  2026.10.19 (GHSA-6q48-6c7w-9gw2, emSign CA distrust) could be adopted inside the 7-day quarantine.
+- **Why:** the absolute cutoff never advances. Once 2026.10.19 is older than the window it only blocks
+  later certifi releases, including future security fixes, for manual and Dependabot upgrades.
+- **Next:** on or after 2026-10-28, delete the `exclude-newer-package` line and its comment, run
+  `uv lock`, and confirm only the lock's `[options.exclude-newer-package]` entry changes.
+
 ### Focus extraction and reprocessing polish
 
 - **What**: tighten focused extraction, consider an explicit item cap, and make
