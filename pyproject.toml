@@ -50,3 +50,6 @@ select = ["E", "F", "I", "B", "UP", "W", "C4", "SIM", "ERA", "RUF", "PIE"]
 # Supply-chain quarantine: ignore distributions uploaded in the last 7 days.
 # For an urgent fix, override one package with exclude-newer-package.
 exclude-newer = "7 days"
+# Security exception: certifi 2026.10.19 distrusts the compromised eMudhra/emSign
+# root (GHSA-6q48-6c7w-9gw2). Remove once it ages past the 7-day window.
+exclude-newer-package = { certifi = "2026-10-21T00:00:00Z" }
