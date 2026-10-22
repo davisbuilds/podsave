@@ -1,6 +1,6 @@
 [project]
 name = "podsave"
-version = "0.1.0"
+version = "0.1.1"
 description = "YouTube videos into curated Obsidian notes — diarized transcripts, top-10 insights."
 authors = [{name = "davisbuilds"}]
 readme = "README.md"
