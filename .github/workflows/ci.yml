@@ -33,7 +33,7 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
-          version: "0.11.3"
+          version: "0.13.5"
 
       - name: Install dependencies (with dev extras)
         run: uv sync --locked --extra dev
@@ -84,7 +84,7 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
-          version: "0.11.3"
+          version: "0.13.5"
 
       - name: Install dependencies (with dev extras)
         run: uv sync --locked --extra dev
