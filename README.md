@@ -23,7 +23,8 @@ OpenAI structured extraction → markdown). Python 3.14 + uv.
 
 Do this, in order:
 
-1. Install deps. Ensure `uv` is installed (https://astral.sh/uv); run
+1. Install deps. Ensure `uv` 0.9.17 or later is installed (https://astral.sh/uv;
+   the 7-day `exclude-newer` release quarantine needs it); run
    `uv sync --extra dev` from the repo root. Clone
    https://github.com/davisbuilds/podsave.git and cd in first if needed.
 
