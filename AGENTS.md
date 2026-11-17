@@ -44,8 +44,6 @@ The project uses `uv` for dependency management.
 ## Working Agreement
 
 - **Push back before building.** If a request is incoherent or self-contradictory, or a spec/plan is vague or skips key decisions, stop and interview me — ask clarifying questions and confirm intent before writing code or changing files. Don't guess at scope or comply silently. (Clear, well-scoped requests don't need this.)
-- **Keep docs current.** Update the owning reference when a change makes its contract, boundary, procedure, or direction inaccurate. Routine internal changes need no ceremonial doc edit.
-- **Commit logically.** Commit completed work in coherent chunks as you proceed. Push only when explicitly asked.
 - **Log durable follow-ups in `BACKLOG.md`.** Capture consequential design gaps,
   tech debt, and better approaches in `docs/project/BACKLOG.md`; fix small or
   blocking issues inline. Keep entries future-only, with evidence and a next step
@@ -54,4 +52,12 @@ The project uses `uv` for dependency management.
   entries; use issues for discussion or coordination with one detailed owner.
   Reconcile affected entries as work lands; update `ROADMAP.md` when selected
   direction changes, not as a shipment log.
+- **Keep docs current.** Update the owning reference when a change makes its contract, boundary, procedure, or direction inaccurate. Routine internal changes need no ceremonial doc edit.
+- **Plan and hand off work.** Reuse clear task context. Save planning docs when
+  decisions, acceptance, or coordination need persistence. Leave a brief
+  handoff only when needed to resume unfinished work. Commit shared docs and
+  keep status current. Before archiving reviewed, completed docs in ignored
+  `docs/archive/`, preserve lasting decisions and open work in maintained docs
+  and repair links.
+- **Commit logically.** Commit completed work in coherent chunks as you proceed. Push only when explicitly asked.
 - **Re-ground after compaction.** A compaction summary loses precise paths, context, and verification state — before continuing, re-read this project's `AGENTS.md`, its reference docs, and recent commits.
