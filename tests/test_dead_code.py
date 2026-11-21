@@ -75,8 +75,6 @@ CHECK_UNUSED_SYMBOLS = True
 CHECK_ORPHANED_MODULES = True
 CHECK_UNREACHABLE = True
 
-# ─── File discovery ─────────────────────────────────────────────────────────
-
 
 def _iter_py_files(root: Path) -> list[Path]:
     if not root.exists():
@@ -218,9 +216,6 @@ def _unreachable_lines(path: Path) -> list[int]:
                     hits.append(block[index + 1].lineno)
                     break
     return sorted(hits)
-
-
-# ─── Tests ──────────────────────────────────────────────────────────────────
 
 
 def test_no_unused_public_symbols() -> None:
