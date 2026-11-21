@@ -49,9 +49,6 @@ def _fake_extraction() -> ExtractionResult:
     )
 
 
-# ---------- drain ----------
-
-
 def test_drain_empty_queue_prints_message(podsave_home: Path) -> None:
     runner.invoke(app, ["init", "--no-prompt"])
     result = runner.invoke(app, ["drain"])
@@ -113,9 +110,6 @@ def test_drain_failure_leaves_entry_and_continues(
     assert len(failed_records) == 1
     assert failed_records[0].url == bad.url
     assert "yt-dlp blew up" in (failed_records[0].error or "")
-
-
-# ---------- retry ----------
 
 
 def test_retry_missing_cache_errors_cleanly(podsave_home: Path) -> None:
