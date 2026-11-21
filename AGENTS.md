@@ -20,7 +20,8 @@ yt-dlp audio → AssemblyAI diarized STT → OpenAI structured extraction → Ob
 
 - **Gate** (matches CI `.github/workflows/ci.yml`): `uv sync --locked --extra dev`,
   then `uv run ruff check .`, `uv run ruff format --check .`,
-  `uv run pytest -q`, and `python3 scripts/check_commit_subjects.py origin/main`.
+  `uv run pytest -q`, `python3 scripts/check_comments.py`, and
+  `python3 scripts/check_commit_subjects.py origin/main`.
 - **Integration tests** (`PODSAVE_INTEGRATION=1 uv run pytest -q`) hit real
   YouTube and paid APIs and cost money. Run them manually before shipping
   non-trivial pipeline changes; they are not part of the gate.
@@ -61,6 +62,12 @@ yt-dlp audio → AssemblyAI diarized STT → OpenAI structured extraction → Ob
 - **TDD:** red/green for features, major refactors and large changes; the red
   test must fail on the behavior, not on a missing symbol. For smaller edits, run
   the relevant existing checks.
+- **Comments.** Don't add code comments. The one exception is a decision record:
+  start it with `WHY:` and state a non-obvious reason the code can't express.
+  Never justify a shortcut in a comment; fix it or record it in
+  `docs/project/BACKLOG.md`. `python3 scripts/check_comments.py` enforces a
+  ratchet: after deleting comments run it with `--update`, and never raise a count
+  in `.comment-baseline.json`.
 - **Commit and push.** Commit coherent chunks, staging by explicit path. Push
   your task branch and open a PR once the work is complete and the local gate
   passes; don't push directly to `main`.

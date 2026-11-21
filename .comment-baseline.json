@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "exclude": [],
+  "files": {
+    ".github/dependabot.yml": 3,
+    ".github/workflows/release-please.yml": 3,
+    ".github/workflows/zizmor.yml": 8,
+    "pyproject.toml": 3,
+    "scripts/check_publication_hygiene.py": 4,
+    "src/podsave/pipeline/download.py": 2,
+    "src/podsave/pipeline/extract.py": 2,
+    "src/podsave/utils/cost.py": 4,
+    "src/podsave/utils/filenames.py": 2,
+    "src/podsave/utils/youtube.py": 1,
+    "tests/test_cli_doctor.py": 4,
+    "tests/test_cli_drain_retry.py": 8,
+    "tests/test_cli_focus.py": 1,
+    "tests/test_cli_search.py": 2,
+    "tests/test_cli_smoke.py": 2,
+    "tests/test_cli_stats.py": 4,
+    "tests/test_dead_code.py": 29,
+    "tests/test_pipeline_download.py": 4,
+    "tests/test_pipeline_extract.py": 6,
+    "tests/test_pipeline_render.py": 3,
+    "tests/test_release_commits.py": 3,
+    "tests/test_search_index.py": 1,
+    "tests/test_search_matcher.py": 1,
+    "tests/test_utils_cost.py": 3,
+    "tests/test_utils_filenames.py": 6,
+    "tests/test_utils_youtube.py": 1
+  }
+}
