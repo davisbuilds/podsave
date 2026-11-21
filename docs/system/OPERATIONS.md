@@ -94,7 +94,8 @@ Workflow: `.github/workflows/ci.yml`
 CI jobs:
 
 - Lint/dead-code: `uv run ruff check .`, `uv run ruff format --check .`,
-  `uv run python -m pytest -q tests/test_dead_code.py`
+  `uv run python -m pytest -q tests/test_dead_code.py`,
+  `python3 scripts/check_comments.py`
 - Test: `uv run python -m pytest -q`
 
 The same CI workflow classifies retained non-merge commits on PRs and direct
@@ -180,10 +181,15 @@ Routine pre-push gate:
 ```bash
 uv run ruff check .
 uv run ruff format --check .
+python3 scripts/check_comments.py
 python3 scripts/check_commit_subjects.py origin/main
 uv run pytest -q
 ./podsave --help
 ```
+
+`scripts/check_comments.py` is a comment ratchet: it fails when a file gains
+disallowed comment lines over `.comment-baseline.json`, and asks for `--update`
+after comments are deleted.
 
 For pipeline changes, add targeted coverage around the affected boundary:
 

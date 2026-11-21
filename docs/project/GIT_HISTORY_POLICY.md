@@ -66,6 +66,7 @@ Quality gates before merge (also the pre-push expectation locally):
 
 - `uv run ruff check .`
 - `uv run ruff format --check .`
+- `python3 scripts/check_comments.py`
 - `python3 scripts/check_commit_subjects.py origin/main` (PR commits)
 - `uv run pytest -q`
 
