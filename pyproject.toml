@@ -38,8 +38,11 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py314"
-# WHY: the comment checker is vendored verbatim; style changes belong in its shared copy.
-extend-exclude = ["scripts/check_comments.py"]
+
+[tool.ruff.format]
+# WHY: the vendored comment checker is formatted for line length 88 and must stay
+# byte-identical to its shared copy; ruff still lints it.
+exclude = ["scripts/check_comments.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "W", "C4", "SIM", "ERA", "RUF", "PIE"]
