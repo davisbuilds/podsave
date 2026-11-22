@@ -17,7 +17,7 @@ _PROMPT_PATH = Path(__file__).parent / "prompts" / "extract_v2.md"
 _QUOTE_MATCH_PREFIX_WORDS = 8
 _QUOTE_MATCH_FALLBACK_WORDS = 4
 
-# Pydantic schema the model is asked to match. Kept separate from Insight so the
+# WHY: the schema the model is asked to match is kept separate from Insight so the
 # wire format and the domain model can evolve independently.
 
 

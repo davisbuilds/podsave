@@ -75,8 +75,8 @@ def _strip_trailing_channel(title: str, channel: str) -> str:
             continue
         before = title_norm[:idx]
         suffix = title_norm[idx + len(sep) :].strip()
-        # Hyphen needs a space before it to count as a separator (avoid splitting
-        # mid-word like "state-of-the-art").
+        # WHY: a hyphen needs a space before it to count as a separator, so
+        # "state-of-the-art" is not split mid-word.
         if sep == "-" and (not before or not before.endswith(" ")):
             continue
         if suffix.casefold() == channel_norm:

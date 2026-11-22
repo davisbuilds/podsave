@@ -32,7 +32,6 @@ def test_grep_matcher_and_of_tokens() -> None:
     ]
     matches = m.find("foo bar", callouts)
     assert len(matches) == 1
-    # The AND-matching callout is the one returned.
     assert "foo and bar" in matches[0].text
 
 

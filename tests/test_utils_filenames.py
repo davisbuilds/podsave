@@ -56,15 +56,13 @@ def test_safe_name_strips_case_insensitive() -> None:
 
 
 def test_safe_name_keeps_partial_match() -> None:
-    # Channel name is "AI" but the trailing token after `|` is "AI Explained".
-    # Dedup should NOT fire — the channel doesn't equal the suffix.
-    # (Existing sanitizer still strips `|`; the point is the suffix words remain.)
+    # WHY: the channel is "AI" but the suffix after `|` is "AI Explained", so dedup
+    # must not fire. The sanitizer still strips `|`; the point is the suffix words remain.
     name = filenames.safe_name("AI", "Foo Bar | AI Explained", published=None)
     assert "AI Explained" in name
 
 
 def test_safe_name_keeps_when_channel_is_empty() -> None:
-    # Empty channel must never dedup — there is no channel to match against.
     name = filenames.safe_name("", "Foo Bar AI Explained", published=None)
     assert "Foo Bar AI Explained" in name
 
@@ -122,10 +120,8 @@ def test_next_version_path_treats_focused_basename_independently(tmp_path: Path)
     focused = filenames.safe_name("Ch", "Title", published=None, focus="career advice")
     (tmp_path / f"{broad}.md").write_text("")
     path, v = filenames.next_version_path(tmp_path, focused)
-    # Different basename → no collision, lands as v1.
     assert path == tmp_path / f"{focused}.md"
     assert v == 1
-    # Same focus, second run → v2 of the focused basename only.
     (tmp_path / f"{focused}.md").write_text("")
     path2, v2 = filenames.next_version_path(tmp_path, focused)
     assert path2 == tmp_path / f"{focused} (v2).md"

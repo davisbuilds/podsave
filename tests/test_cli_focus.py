@@ -128,7 +128,6 @@ def test_save_with_empty_focus_treated_as_unfocused(
 
     result = runner.invoke(app, ["save", m.url, "--focus", "   "])
     assert result.exit_code == 0, result.stdout + (result.stderr or "")
-    # Whitespace focus should normalize to None at the boundary.
     assert captured["focus"] in (None, "")
     notes = list(vault.glob("*.md"))
     assert len(notes) == 1

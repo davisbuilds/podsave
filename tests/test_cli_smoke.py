@@ -159,7 +159,7 @@ def test_save_non_dry_run_uses_cached_transcript(
         '[extraction]\nmodel = "gpt-5.4-mini"\n'
     )
 
-    # Seed cache — save() should skip download + transcribe.
+    # WHY: a seeded cache means save() skips download and transcribe.
     from podsave.models import ExtractionResult, Insight
     from podsave.pipeline import extract as extract_mod
     from podsave.storage import transcripts as transcript_store
@@ -188,7 +188,6 @@ def test_save_non_dry_run_uses_cached_transcript(
     assert result.exit_code == 0, result.stdout
     assert "cached transcript" in result.stdout.lower()
     assert "note written" in result.stdout.lower()
-    # Note file should exist in vault.
     notes = list(vault.glob("*.md"))
     assert len(notes) == 1
 

@@ -48,7 +48,7 @@ def test_stats_counts_completes_and_failures(podsave_home: Path) -> None:
     result = runner.invoke(app, ["stats"])
     assert result.exit_code == 0, result.stdout
     out = result.stdout
-    # 3 completes (2 v1 + 1 retry), 1 failed
+    # WHY: 3 completes (2 v1 + 1 retry), 1 failed
     assert "3" in out
     assert "1" in out
     assert "fail" in out.lower()
@@ -60,7 +60,7 @@ def test_stats_sums_cost(podsave_home: Path) -> None:
     log_store.append(_record("b", cost={"stt": 0.30, "extract": 0.02}))
     result = runner.invoke(app, ["stats"])
     assert result.exit_code == 0
-    # 0.20 + 0.01 + 0.30 + 0.02 = 0.53
+    # WHY: the four run costs sum to 0.53 (0.20 + 0.01 + 0.30 + 0.02).
     assert "0.53" in result.stdout
 
 
@@ -73,12 +73,11 @@ def test_stats_top_channels(podsave_home: Path) -> None:
     out = result.stdout
     assert "AI Explained" in out
     assert "Anthropic" in out
-    # AI Explained should appear before Anthropic (sorted by count desc)
     assert out.index("AI Explained") < out.index("Anthropic")
 
 
 def test_stats_handles_missing_channel(podsave_home: Path) -> None:
-    # Old-style record: no channel field set.
+    # WHY: older log records have no channel field.
     log_store.append(_record("a", channel=None))
     result = runner.invoke(app, ["stats"])
     assert result.exit_code == 0

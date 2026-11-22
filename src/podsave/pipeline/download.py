@@ -14,8 +14,8 @@ from podsave.utils.youtube import extract_video_id, is_playlist
 
 _YT_DLP_CMD = "yt-dlp"
 
-MIN_DURATION_SEC = 15 * 60  # 15 minutes
-MAX_DURATION_SEC = 4 * 3600  # 4 hours
+MIN_DURATION_SEC = 15 * 60
+MAX_DURATION_SEC = 4 * 3600
 
 
 def check_duration(meta: VideoMeta, *, force: bool) -> None:

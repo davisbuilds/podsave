@@ -59,12 +59,11 @@ def test_doctor_finds_orphan_transcript(podsave_home: Path) -> None:
         video_id="abc123", url="https://youtu.be/abc123", title="T", channel="C", duration_sec=1800
     )
     transcript_store.save(meta.video_id, {"text": "x"}, meta)
-    # No corresponding `complete` log entry.
+    # WHY: no matching `complete` log entry, so the transcript is orphaned.
 
     result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 0
     assert "abc123" in result.stdout
-    # Hint at the fix.
     assert "retry" in result.stdout.lower()
 
 
@@ -86,12 +85,11 @@ def test_doctor_skips_transcripts_with_complete_run(podsave_home: Path) -> None:
 
     result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 0
-    # Should not flag the transcript as orphaned (no retry hint involving abc123).
     assert "abc123" not in result.stdout
 
 
 def test_doctor_warns_on_missing_keys(podsave_home: Path) -> None:
-    runner.invoke(app, ["init", "--no-prompt"])  # writes REPLACE_ME placeholders
+    runner.invoke(app, ["init", "--no-prompt"])  # WHY: writes REPLACE_ME placeholders
     result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 0
     out = result.stdout.lower()

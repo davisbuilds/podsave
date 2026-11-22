@@ -32,45 +32,40 @@ import ast
 import re
 from pathlib import Path
 
-# ─── Configuration (per-project) ───────────────────────────────────────────
-
 ROOT = Path(__file__).resolve().parents[1]
 
-# Where first-party source lives, and the base directory module names are
-# computed against. Keep these in sync with the src-layout import style.
+# WHY: module names are computed against MODULE_BASE, so keep these in sync
+# with the src-layout import style.
 SRC_DIR = ROOT / "src" / "podsave"
-MODULE_BASE = ROOT / "src"  # module names are relative to here -> "podsave.pipeline.extract"
-IMPORT_ROOT = "podsave"  # first-party import prefix
+MODULE_BASE = ROOT / "src"
+IMPORT_ROOT = "podsave"
 
-# Directories scanned for *references* in addition to source: any place a
-# symbol might legitimately be used. .py files are parsed (AST); other files
-# are searched as text so symbols used only in templates/prompts/configs aren't
-# flagged (e.g. LLM prompt markdown under src/podsave/pipeline/prompts/).
+# WHY: references can live outside Python. .py files are parsed (AST); other
+# files are searched as text so symbols used only in templates, prompts, or
+# configs aren't flagged (e.g. LLM prompt markdown under src/podsave/pipeline/prompts/).
 REFERENCE_PY_DIRS = [SRC_DIR, ROOT / "tests"]
 REFERENCE_TEXT_FILES = [ROOT / "pyproject.toml", *SRC_DIR.rglob("*.md")]
 
 SKIP_DIR_NAMES = {"__pycache__", ".venv", ".git", ".mypy_cache", ".ruff_cache"}
 
-# Modules invoked via console-scripts / frameworks, never imported by name.
 MODULE_EXCEPTIONS = {
-    "podsave.cli",  # console_scripts entry point (podsave.cli:main)
+    "podsave.cli",  # WHY: console_scripts entry point (podsave.cli:main)
 }
 
-# Public symbols intentionally unreferenced internally (external API, reflection,
-# etc.). Format: "module::name". Document *why* on each line.
+# WHY: public symbols intentionally unreferenced internally (external API,
+# reflection). Format: "module::name", with the reason on each line.
 SYMBOL_EXCEPTIONS: set[str] = {
-    # Protocol seam for a future EmbeddingMatcher (see module docstring + ROADMAP);
+    # WHY: Protocol seam for a future embedding matcher (see the module docstring);
     # GrepMatcher implements it structurally, so it has no internal call site.
     "podsave.search.matcher::Matcher",
 }
 
-# Decorator attribute names that mark a function as framework-invoked and thus
-# legitimately never imported by name: @app.command(), @queue_app.command(...).
+# WHY: typer invokes @app.command() and @queue_app.command(...) functions, so they
+# are legitimately never imported by name.
 FRAMEWORK_DECORATORS = {"command", "callback"}
 
-MIN_NAME_LEN = 4  # shorter identifiers have a high false-positive rate
+MIN_NAME_LEN = 4  # WHY: shorter identifiers have a high false-positive rate
 
-# Per-check toggles.
 CHECK_UNUSED_SYMBOLS = True
 CHECK_ORPHANED_MODULES = True
 CHECK_UNREACHABLE = True
@@ -97,9 +92,6 @@ def _module_name(path: Path) -> str:
 
 def _source_modules() -> dict[str, Path]:
     return {_module_name(p): p for p in _iter_py_files(SRC_DIR)}
-
-
-# ─── Symbol & reference extraction (AST) ────────────────────────────────────
 
 
 def _is_framework_decorated(node: ast.AST) -> bool:
@@ -143,9 +135,6 @@ def _loaded_names(path: Path) -> set[str]:
         elif isinstance(node, ast.Attribute):
             names.add(node.attr)
     return names
-
-
-# ─── Import resolution (orphaned-module check) ──────────────────────────────
 
 
 def _resolve_import_from(
@@ -198,8 +187,6 @@ def _imported_modules(path: Path, modules: dict[str, Path]) -> set[str]:
     return imported
 
 
-# ─── Unreachable-code detection (AST) ───────────────────────────────────────
-
 _TERMINALS = (ast.Return, ast.Raise, ast.Break, ast.Continue)
 
 
@@ -236,10 +223,9 @@ def test_no_unused_public_symbols() -> None:
                 continue
             if f"{module}::{name}" in SYMBOL_EXCEPTIONS:
                 continue
-            # A symbol is alive if any module loads it — including its own, since
-            # the definition statement itself is not a load. Dead = never read
-            # anywhere. (Conservative: shared names mask deadness but never cause
-            # a live symbol to be flagged.)
+            # WHY: a symbol is alive if any module loads it, including its own, since
+            # the definition statement itself is not a load. Conservative: shared names mask
+            # deadness but never cause a live symbol to be flagged.
             if any(name in names for names in loaded_by_file.values()):
                 continue
             if re.search(rf"\b{re.escape(name)}\b", text_corpus):
@@ -273,7 +259,7 @@ def test_no_orphaned_modules() -> None:
         for module, refs in sorted(incoming.items())
         if refs == 0
         and module not in MODULE_EXCEPTIONS
-        and modules[module].name != "__init__.py"  # packages aggregate, don't originate
+        and modules[module].name != "__init__.py"  # WHY: packages aggregate, don't originate
     ]
 
     if orphaned:

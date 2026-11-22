@@ -100,7 +100,7 @@ def test_render_resolves_speaker_name_when_known() -> None:
 
 def test_render_low_confidence_speaker_keeps_marker() -> None:
     meta, extraction = _fixture()
-    # extract.py already formats low-confidence names with a `(?)` suffix.
+    # WHY: extract.py already formats low-confidence names with a `(?)` suffix.
     extraction = extraction.model_copy(update={"speakers": {"A": "Andrew Huberman (?)"}})
     note = render.render_note(
         meta,
@@ -114,7 +114,6 @@ def test_render_low_confidence_speaker_keeps_marker() -> None:
 
 def test_render_falls_back_to_speaker_letter_when_unknown() -> None:
     meta, extraction = _fixture()
-    # No speakers in the map → existing behavior preserved.
     note = render.render_note(
         meta,
         extraction,
@@ -185,7 +184,7 @@ def test_render_note_hour_plus_timestamp() -> None:
                     kind="quote",
                     text="Deep cut.",
                     speaker="B",
-                    start_ms=3_723_000,  # 1:02:03
+                    start_ms=3_723_000,
                     rank=1,
                 )
             ]
