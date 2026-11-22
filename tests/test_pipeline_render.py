@@ -100,7 +100,6 @@ def test_render_resolves_speaker_name_when_known() -> None:
 
 def test_render_low_confidence_speaker_keeps_marker() -> None:
     meta, extraction = _fixture()
-    # WHY: extract.py already formats low-confidence names with a `(?)` suffix.
     extraction = extraction.model_copy(update={"speakers": {"A": "Andrew Huberman (?)"}})
     note = render.render_note(
         meta,

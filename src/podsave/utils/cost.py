@@ -8,9 +8,11 @@ from __future__ import annotations
 
 from podsave.models import CostEstimate
 
-ASSEMBLYAI_PER_HOUR_USD = 0.21  # WHY: priced for the universal-3-pro speech model
+#: Priced for AssemblyAI's universal-3-pro speech model.
+ASSEMBLYAI_PER_HOUR_USD = 0.21
 
-OPENAI_INPUT_PER_MILLION_USD = 0.75  # WHY: priced for the default extraction model, gpt-5.4-mini
+#: Priced for the default extraction model, gpt-5.4-mini.
+OPENAI_INPUT_PER_MILLION_USD = 0.75
 OPENAI_OUTPUT_PER_MILLION_USD = 4.50
 
 TOKENS_PER_MINUTE_AUDIO = 200  # WHY: ~150 spoken words/min x ~1.3 tokens/word

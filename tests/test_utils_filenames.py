@@ -56,8 +56,6 @@ def test_safe_name_strips_case_insensitive() -> None:
 
 
 def test_safe_name_keeps_partial_match() -> None:
-    # WHY: the channel is "AI" but the suffix after `|` is "AI Explained", so dedup
-    # must not fire. The sanitizer still strips `|`; the point is the suffix words remain.
     name = filenames.safe_name("AI", "Foo Bar | AI Explained", published=None)
     assert "AI Explained" in name
 

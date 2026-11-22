@@ -129,10 +129,9 @@ def test_matching_real_tag_excludes_released_history_and_new_manifest_falls_back
     assert _unreleased(repo).returncode == 0
     _git(repo, "commit", "--allow-empty", "-m", "fix: valid unreleased change")
     assert _unreleased(repo).returncode == 0
-    # WHY: simulates a merged release PR whose tag does not exist yet.
     _release_metadata(repo, bootstrap, "0.2.0")
     result = _unreleased(repo)
-    assert result.returncode == 1  # WHY: the conservative fallback must not forget history.
+    assert result.returncode == 1
     assert "bootstrap" in result.stdout
     assert "Unclassified already released history" in result.stderr
 

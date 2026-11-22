@@ -7,7 +7,6 @@ def test_zero_duration_is_zero_cost() -> None:
     est = cost_utils.estimate(0)
     assert est.stt_usd == 0
     assert est.extraction_input_usd == 0
-    # WHY: output tokens are fixed per run, so extraction output sets a floor.
     assert est.total_usd == est.extraction_output_usd
 
 
@@ -15,14 +14,13 @@ def test_one_hour_matches_expected_rate() -> None:
     est = cost_utils.estimate(3600)
     assert est.duration_sec == 3600
     assert est.stt_usd == round(cost_utils.ASSEMBLYAI_PER_HOUR_USD, 4)
-    # WHY: 3600s / 60 * 200 = 12_000 input tokens
     assert est.estimated_input_tokens == 12_000
 
 
 def test_three_hour_rogan() -> None:
     est = cost_utils.estimate(3 * 3600)
     assert est.stt_usd > 0.5
-    assert est.stt_usd < 0.7  # WHY: $0.21 x 3 ~= $0.63
+    assert est.stt_usd < 0.7
     assert est.estimated_input_tokens == 36_000
 
 

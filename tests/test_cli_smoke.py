@@ -159,7 +159,6 @@ def test_save_non_dry_run_uses_cached_transcript(
         '[extraction]\nmodel = "gpt-5.4-mini"\n'
     )
 
-    # WHY: a seeded cache means save() skips download and transcribe.
     from podsave.models import ExtractionResult, Insight
     from podsave.pipeline import extract as extract_mod
     from podsave.storage import transcripts as transcript_store

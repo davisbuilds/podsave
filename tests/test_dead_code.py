@@ -34,15 +34,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# WHY: module names are computed against MODULE_BASE, so keep these in sync
-# with the src-layout import style.
 SRC_DIR = ROOT / "src" / "podsave"
 MODULE_BASE = ROOT / "src"
 IMPORT_ROOT = "podsave"
 
-# WHY: references can live outside Python. .py files are parsed (AST); other
-# files are searched as text so symbols used only in templates, prompts, or
-# configs aren't flagged (e.g. LLM prompt markdown under src/podsave/pipeline/prompts/).
 REFERENCE_PY_DIRS = [SRC_DIR, ROOT / "tests"]
 REFERENCE_TEXT_FILES = [ROOT / "pyproject.toml", *SRC_DIR.rglob("*.md")]
 
@@ -52,8 +47,6 @@ MODULE_EXCEPTIONS = {
     "podsave.cli",  # WHY: console_scripts entry point (podsave.cli:main)
 }
 
-# WHY: public symbols intentionally unreferenced internally (external API,
-# reflection). Format: "module::name", with the reason on each line.
 SYMBOL_EXCEPTIONS: set[str] = {
     # WHY: Protocol seam for a future embedding matcher (see the module docstring);
     # GrepMatcher implements it structurally, so it has no internal call site.
