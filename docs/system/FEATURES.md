@@ -36,7 +36,7 @@ Supports `--focus TEXT` with the same semantics as `save --focus`: the focused n
 | `list` | Numbered list of queued URLs, plus the backing file path as a footer |
 | `edit` | Open `queue.txt` in `$EDITOR` (fallback: `open -t` on macOS) |
 | `remove <url>` | Remove the first matching URL; exit-1 if not found |
-| `clear [--yes]` | Empty the queue; confirms interactively unless `--yes` |
+| `clear [--yes]` | Clear the queue after confirmation, or pass `--yes` to skip the prompt. A nonempty queue requires `--yes` when stdin is not a terminal. |
 
 ### `podsave stats`
 
