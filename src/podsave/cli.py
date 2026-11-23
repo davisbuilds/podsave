@@ -409,9 +409,12 @@ def queue_clear(
     if n == 0:
         typer.echo("(queue already empty)")
         return
-    if not yes and not typer.confirm(f"clear {n} URL(s) from the queue?"):
-        typer.echo("aborted")
-        raise typer.Exit(code=1)
+    if not yes:
+        if sys.stdin is None or not sys.stdin.isatty():
+            _fail("use --yes to clear the queue without an interactive terminal")
+        if not typer.confirm(f"clear {n} URL(s) from the queue?"):
+            typer.echo("aborted")
+            raise typer.Exit(code=1)
     removed = queue_store.clear()
     typer.echo(f"cleared {removed} URL(s)")
 

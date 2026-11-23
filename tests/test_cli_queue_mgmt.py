@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -40,17 +41,48 @@ def test_queue_remove_missing_entry_errors(podsave_home: Path) -> None:
 
 def test_queue_clear_empty_is_noop(podsave_home: Path) -> None:
     runner.invoke(app, ["init", "--no-prompt"])
-    result = runner.invoke(app, ["queue", "clear", "--yes"])
+    result = runner.invoke(app, ["queue", "clear"])
     assert result.exit_code == 0
     assert "already empty" in result.stdout.lower()
 
 
-def test_queue_clear_removes_all(podsave_home: Path) -> None:
-    runner.invoke(app, ["init", "--no-prompt"])
+@pytest.mark.parametrize("stdin", [subprocess.PIPE, subprocess.DEVNULL], ids=["open-pipe", "eof"])
+def test_queue_clear_requires_yes_without_a_terminal(podsave_home: Path, stdin: int) -> None:
+    url = "https://youtu.be/a"
+    queue_store.add(url)
+
+    with subprocess.Popen(
+        ["./podsave", "queue", "clear"],
+        stdin=stdin,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    ) as process:
+        try:
+            exit_code = process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            raise
+        stdout, stderr = process.communicate()
+
+    assert exit_code == 1
+    assert stdout == ""
+    assert "--yes" in stderr
+    assert queue_store.list_all() == [url]
+
+
+def test_queue_clear_yes_removes_all_without_a_terminal(podsave_home: Path) -> None:
     queue_store.add("https://youtu.be/a")
     queue_store.add("https://youtu.be/b")
-    result = runner.invoke(app, ["queue", "clear", "--yes"])
-    assert result.exit_code == 0
+    result = subprocess.run(
+        ["./podsave", "queue", "clear", "--yes"],
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=5,
+    )
+    assert result.returncode == 0
     assert queue_store.list_all() == []
     assert "cleared 2" in result.stdout.lower()
 
