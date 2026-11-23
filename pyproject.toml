@@ -47,4 +47,6 @@ select = ["E", "F", "I", "B", "UP", "W", "C4", "SIM", "ERA", "RUF", "PIE"]
 "tests/**" = ["RUF012"]
 
 [tool.uv]
+# WHY: quarantine new releases globally. An urgent fix can use a per-package
+# cutoff (exclude-newer-package) while every other package stays quarantined.
 exclude-newer = "7 days"

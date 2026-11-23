@@ -38,6 +38,8 @@ SRC_DIR = ROOT / "src" / "podsave"
 MODULE_BASE = ROOT / "src"
 IMPORT_ROOT = "podsave"
 
+# WHY: prompt Markdown can reference symbols that have no Python call sites.
+# Scan non-Python files as text to avoid flagging those symbols as dead.
 REFERENCE_PY_DIRS = [SRC_DIR, ROOT / "tests"]
 REFERENCE_TEXT_FILES = [ROOT / "pyproject.toml", *SRC_DIR.rglob("*.md")]
 
