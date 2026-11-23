@@ -129,9 +129,7 @@ def test_drain_failure_leaves_entry_and_continues(
     _assert_drain_counts(result, drain_flags, succeeded=1, failed=1)
     progress = result.stderr if "--json" in drain_flags else result.stdout
     assert "yt-dlp blew up" in progress
-    # Bad URL stays, good URL is removed.
     assert queue_store.list_all() == [bad.url]
-    # Failure is recorded in the log.
     failed_record, completed_record = log_store.read_all()
     assert (failed_record.url, failed_record.status, failed_record.error) == (
         bad.url,
@@ -196,17 +194,14 @@ def test_retry_reuses_cache_and_bumps_version(
     m = _meta("cccccccccc3")
     transcript_store.save(m.video_id, {"text": "cached"}, m)
 
-    # Assert no network or STT path is taken.
     def _no_download(*a: Any, **kw: Any) -> Any:
         raise AssertionError("download should not run during retry")
 
     monkeypatch.setattr(download, "download_audio", _no_download)
     monkeypatch.setattr(extract_mod, "extract", lambda *a, **kw: _fake_extraction())
 
-    # First retry → v1.
     r1 = runner.invoke(app, ["retry", m.video_id])
     assert r1.exit_code == 0, r1.stdout
-    # Second retry → (v2).
     r2 = runner.invoke(app, ["retry", m.video_id])
     assert r2.exit_code == 0, r2.stdout
 
@@ -214,7 +209,6 @@ def test_retry_reuses_cache_and_bumps_version(
     assert len(notes) == 2
     assert any("(v2)" in n for n in notes)
 
-    # Both runs logged with stt cost of 0.
     records = log_store.read_all()
     assert len(records) == 2
     for rec in records:

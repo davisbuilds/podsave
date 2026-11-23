@@ -5,7 +5,7 @@ import pytest
 from podsave.errors import InvalidYouTubeURLError, PlaylistURLError
 from podsave.utils.youtube import extract_video_id, is_playlist, timestamp_url
 
-VALID_ID = "dQw4w9WgXcQ"  # 11 chars
+VALID_ID = "dQw4w9WgXcQ"
 
 
 @pytest.mark.parametrize(

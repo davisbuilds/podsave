@@ -143,7 +143,6 @@ def test_search_filters_pass_through(podsave_home: Path, tmp_path: Path) -> None
 
     result = runner.invoke(app, ["search", "agency", "--kind", "quote", "--channel", "anthropic"])
     assert result.exit_code == 0, (result.stdout or "") + (result.stderr or "")
-    # Only the Anthropic quote should appear.
     assert "anthropic-q" in result.stdout
     assert "anthropic-i" not in result.stdout
     assert "other-q" not in result.stdout
@@ -158,7 +157,6 @@ def test_search_limit_caps_results(podsave_home: Path, tmp_path: Path) -> None:
 
     result = runner.invoke(app, ["search", "agency", "--limit", "2"])
     assert result.exit_code == 0
-    # Footer line names how many came back.
     assert "2 callout" in result.stdout
 
 

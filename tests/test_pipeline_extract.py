@@ -151,9 +151,9 @@ def test_refine_quote_timestamps_snaps_to_word_start() -> None:
         ),
     ]
     extract._refine_quote_timestamps(items, words)
-    assert items[0].start_ms == 0  # insights untouched
-    assert items[1].start_ms == 10_000  # matched on 8-word prefix
-    assert items[2].start_ms == 450_800  # matched via 4-word fallback
+    assert items[0].start_ms == 0
+    assert items[1].start_ms == 10_000
+    assert items[2].start_ms == 450_800
 
 
 def test_refine_quote_timestamps_leaves_start_when_no_match() -> None:
@@ -217,7 +217,6 @@ def test_extract_returns_speaker_map(monkeypatch: pytest.MonkeyPatch) -> None:
     result = extract.extract(raw_transcript, _meta(), api_key="k", model="m")
 
     assert result.speakers == {"A": "Andrew Huberman", "B": "Lex (?)"}
-    # C is omitted entirely (no name) — render falls back to letter.
     assert "C" not in result.speakers
     assert result.prompt_version == "v2"
 
@@ -305,8 +304,6 @@ def test_extract_records_focus_on_result(monkeypatch: pytest.MonkeyPatch) -> Non
 def test_extract_returns_empty_items_when_focus_unmatched(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    # Model decided no items match the focus → returns items=[]. extract must NOT raise;
-    # zero items is a valid model response. CLI handles the empty case.
     payload = extract._ExtractionPayload(items=[])
     _install_fake_openai(monkeypatch, payload)
     raw = {"utterances": [{"speaker": "A", "start": 0, "text": "Hi."}]}

@@ -28,7 +28,6 @@ def _parse(url: str) -> tuple[str, str, dict[str, list[str]]]:
 def is_playlist(url: str) -> bool:
     """True iff url refers to a playlist (not a single video, even one in a playlist)."""
     _, path, query = _parse(url)
-    # /playlist with list= and no v= → pure playlist
     return path.rstrip("/").endswith("/playlist") and "list" in query and "v" not in query
 
 

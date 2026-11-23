@@ -112,7 +112,6 @@ def test_parse_note_extracts_callouts(tmp_path: Path) -> None:
 
 
 def test_parse_note_quote_strips_surrounding_quotes(tmp_path: Path) -> None:
-    # Render wraps quote text in literal "" — parse must strip them.
     path = _write_note(tmp_path, _extraction())
     note = index.parse_note(path)
     quote = next(c for c in note.callouts if c.kind == "quote")

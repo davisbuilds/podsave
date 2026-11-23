@@ -95,7 +95,6 @@ def test_probe_handles_missing_upload_date(monkeypatch: pytest.MonkeyPatch) -> N
 def test_probe_rejects_playlist_urls_before_shelling_out(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    # If subprocess.run gets called at all, this raises — proving we shortcut.
     monkeypatch.setattr(
         subprocess,
         "run",
@@ -117,7 +116,7 @@ def test_probe_raises_probe_error_on_yt_dlp_failure(
 
 
 def test_probe_raises_on_incomplete_payload(monkeypatch: pytest.MonkeyPatch) -> None:
-    payload = {"id": "dQw4w9WgXcQ"}  # no title/channel/duration
+    payload = {"id": "dQw4w9WgXcQ"}
     monkeypatch.setattr(subprocess, "run", lambda *a, **kw: _fake_yt_dlp_ok(payload))
     with pytest.raises(ProbeError):
         download.probe("https://youtu.be/dQw4w9WgXcQ")
@@ -151,7 +150,7 @@ def test_check_duration_rejects_long() -> None:
 
 
 def test_check_duration_passes_in_range() -> None:
-    download.check_duration(_meta(30 * 60), force=False)  # no raise
+    download.check_duration(_meta(30 * 60), force=False)
 
 
 def test_check_duration_force_bypasses_both_bounds() -> None:
@@ -165,7 +164,6 @@ def test_download_audio_finds_file_after_yt_dlp_success(
     meta = _meta(1800)
 
     def fake_run(*a: object, **kw: object) -> subprocess.CompletedProcess[str]:
-        # Simulate yt-dlp writing the file.
         (tmp_path / f"{meta.video_id}.m4a").write_bytes(b"fake audio")
         return subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
 
