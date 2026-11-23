@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import json
 import os
 import subprocess
 import sys
@@ -12,6 +13,7 @@ from typing import Any
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 
@@ -423,29 +425,28 @@ def queue_clear(
 @handle_errors
 def drain(
     force: bool = typer.Option(False, "--force", help="Bypass 15m/4h duration guards."),
+    json_output: bool = typer.Option(False, "--json", help="Write batch counts to stdout as JSON."),
 ) -> None:
     """Process every URL in the queue; remove on success, leave on failure."""
     urls = queue_store.list_all()
-    if not urls:
-        typer.echo("(queue empty)")
-        return
-
-    console = Console()
-    successes: list[str] = []
+    console = Console(stderr=json_output)
+    succeeded = 0
     failures: list[tuple[str, str]] = []
 
     for i, url in enumerate(urls, start=1):
-        console.rule(f"[bold]{i}/{len(urls)}[/bold] {url}")
+        console.rule(f"[bold]{i}/{len(urls)}[/bold] {escape(url)}")
         meta: VideoMeta | None = None
         try:
             meta = download.probe(url)
             estimate = cost_utils.estimate(meta.duration_sec)
             _process_url(meta, estimate=estimate, force=force, console=console)
             queue_store.remove(url)
-            successes.append(url)
+            succeeded += 1
         except PodsaveError as exc:
-            console.print(f"[red]failed:[/red] {exc}")
+            console.print(f"[red]failed:[/red] {escape(str(exc))}")
             failures.append((url, str(exc)))
+            if isinstance(exc, EmptyExtractionError):
+                continue
             log_store.append(
                 RunRecord(
                     url=url,
@@ -459,12 +460,19 @@ def drain(
                 )
             )
 
-    console.rule("[bold]drain complete[/bold]")
-    console.print(f"[green]succeeded:[/green] {len(successes)}")
-    console.print(f"[red]failed:[/red]   {len(failures)}")
-    if failures:
-        for u, err in failures:
-            console.print(f"  [dim]· {u}: {err}[/dim]")
+    if json_output:
+        typer.echo(json.dumps({"succeeded": succeeded, "failed": len(failures)}))
+    elif not urls:
+        typer.echo("(queue empty)")
+    else:
+        console.rule("[bold]drain complete[/bold]")
+        console.print(f"[green]succeeded:[/green] {succeeded}")
+        console.print(f"[red]failed:[/red]   {len(failures)}")
+        for url, error in failures:
+            console.print(f"  [dim]· {escape(url)}: {escape(error)}[/dim]")
+
+    if failures and not succeeded:
+        raise typer.Exit(code=1)
 
 
 @app.command()
