@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import json
 from datetime import date
 from pathlib import Path
 from typing import Any
 
 import pytest
-from typer.testing import CliRunner
+from typer.testing import CliRunner, Result
 
 from podsave.cli import app
 from podsave.errors import DownloadError
@@ -18,6 +19,11 @@ from podsave.storage import queue as queue_store
 from podsave.storage import transcripts as transcript_store
 
 runner = CliRunner()
+
+
+@pytest.fixture(params=[pytest.param([], id="human"), pytest.param(["--json"], id="json")])
+def drain_flags(request: pytest.FixtureRequest) -> list[str]:
+    return request.param
 
 
 def _seed_config(vault: Path) -> None:
@@ -49,15 +55,31 @@ def _fake_extraction() -> ExtractionResult:
     )
 
 
-def test_drain_empty_queue_prints_message(podsave_home: Path) -> None:
+def _assert_drain_counts(
+    result: Result, drain_flags: list[str], *, succeeded: int, failed: int
+) -> None:
+    if "--json" in drain_flags:
+        summary = json.loads(result.stdout)
+        assert summary == {"succeeded": succeeded, "failed": failed}
+        assert all(type(count) is int for count in summary.values())
+    elif succeeded or failed:
+        assert f"succeeded: {succeeded}" in result.stdout
+        assert f"failed:   {failed}" in result.stdout
+    else:
+        assert result.stdout == "(queue empty)\n"
+
+
+def test_drain_empty_queue_prints_message(podsave_home: Path, drain_flags: list[str]) -> None:
     runner.invoke(app, ["init", "--no-prompt"])
-    result = runner.invoke(app, ["drain"])
+    result = runner.invoke(app, ["drain", *drain_flags])
     assert result.exit_code == 0
-    assert "empty" in result.stdout.lower()
+    _assert_drain_counts(result, drain_flags, succeeded=0, failed=0)
+    assert result.stderr == ""
+    assert log_store.read_all() == []
 
 
 def test_drain_success_removes_entry(
-    podsave_home: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    podsave_home: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, drain_flags: list[str]
 ) -> None:
     runner.invoke(app, ["init", "--no-prompt"])
     vault = tmp_path / "vault"
@@ -70,16 +92,19 @@ def test_drain_success_removes_entry(
     monkeypatch.setattr(download, "probe", lambda url: m)
     monkeypatch.setattr(extract_mod, "extract", lambda *a, **kw: _fake_extraction())
 
-    result = runner.invoke(app, ["drain"])
-    assert result.exit_code == 0, result.stdout
-    assert "succeeded: 1" in result.stdout
-    assert "failed:   0" in result.stdout
+    result = runner.invoke(app, ["drain", *drain_flags])
+    assert result.exit_code == 0, result.output
+    _assert_drain_counts(result, drain_flags, succeeded=1, failed=0)
+    progress = result.stderr if "--json" in drain_flags else result.stdout
+    assert m.url in progress
+    assert "note written" in progress
     assert queue_store.list_all() == []
     assert len(list(vault.glob("*.md"))) == 1
+    assert [(record.url, record.status) for record in log_store.read_all()] == [(m.url, "complete")]
 
 
 def test_drain_failure_leaves_entry_and_continues(
-    podsave_home: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    podsave_home: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, drain_flags: list[str]
 ) -> None:
     runner.invoke(app, ["init", "--no-prompt"])
     vault = tmp_path / "vault"
@@ -99,17 +124,59 @@ def test_drain_failure_leaves_entry_and_continues(
     monkeypatch.setattr(download, "probe", _probe)
     monkeypatch.setattr(extract_mod, "extract", lambda *a, **kw: _fake_extraction())
 
-    result = runner.invoke(app, ["drain"])
-    assert result.exit_code == 0, result.stdout
-    assert "succeeded: 1" in result.stdout
-    assert "failed:   1" in result.stdout
+    result = runner.invoke(app, ["drain", *drain_flags])
+    assert result.exit_code == 0, result.output
+    _assert_drain_counts(result, drain_flags, succeeded=1, failed=1)
+    progress = result.stderr if "--json" in drain_flags else result.stdout
+    assert "yt-dlp blew up" in progress
     # Bad URL stays, good URL is removed.
     assert queue_store.list_all() == [bad.url]
     # Failure is recorded in the log.
-    failed_records = [r for r in log_store.read_all() if r.status == "failed"]
-    assert len(failed_records) == 1
-    assert failed_records[0].url == bad.url
-    assert "yt-dlp blew up" in (failed_records[0].error or "")
+    failed_record, completed_record = log_store.read_all()
+    assert (failed_record.url, failed_record.status, failed_record.error) == (
+        bad.url,
+        "failed",
+        "yt-dlp blew up",
+    )
+    assert (completed_record.url, completed_record.status) == (good.url, "complete")
+
+
+def test_drain_all_failed_exits_one_and_records_each_failure_once(
+    podsave_home: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, drain_flags: list[str]
+) -> None:
+    runner.invoke(app, ["init", "--no-prompt"])
+    vault = tmp_path / "vault"
+    _seed_config(vault)
+
+    empty = _meta("eeeeeeeeee1")
+    bad = _meta("bbbbbbbbbb2")
+    queue_store.add(empty.url)
+    queue_store.add(bad.url)
+    transcript_store.save(empty.video_id, {"text": "cached"}, empty)
+
+    def _probe(url: str) -> VideoMeta:
+        if url == bad.url:
+            raise DownloadError("yt-dlp blew up")
+        return empty
+
+    extraction = _fake_extraction().model_copy(update={"items": []})
+    monkeypatch.setattr(download, "probe", _probe)
+    monkeypatch.setattr(extract_mod, "extract", lambda *a, **kw: extraction)
+
+    result = runner.invoke(app, ["drain", *drain_flags])
+    assert result.exit_code == 1, result.output
+    _assert_drain_counts(result, drain_flags, succeeded=0, failed=2)
+    progress = result.stderr if "--json" in drain_flags else result.stdout
+    assert "extraction returned zero items" in progress
+    assert "yt-dlp blew up" in progress
+    assert queue_store.list_all() == [empty.url, bad.url]
+    assert list(vault.glob("*.md")) == []
+
+    empty_record, probe_record = log_store.read_all()
+    assert (empty_record.url, empty_record.status) == (empty.url, "failed")
+    assert empty_record.error == f"extraction returned zero items for {empty.title}"
+    assert empty_record.cost_usd["extract"] > 0
+    assert (probe_record.url, probe_record.status) == (bad.url, "failed")
 
 
 def test_retry_missing_cache_errors_cleanly(podsave_home: Path) -> None:

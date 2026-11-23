@@ -18,9 +18,11 @@ Processes one YouTube URL end-to-end.
 - **`--focus TEXT`**: narrows extraction to items relevant to a free-form lens (e.g. `--focus "career advice"`). The note lands as a separate file with `(focus: <slug>)` in the basename and `podsave/<slug>` as a sub-tag, so different lenses on the same video coexist. If the model returns zero items, the CLI refuses to write a note (exits 1, logs a `failed` RunRecord). Empty/whitespace focus is treated as no focus.
 - Playlist URLs are rejected before any network call with a `PlaylistURLError`.
 
-### `podsave drain [--force]`
+### `podsave drain [--force] [--json]`
 
 Loops over every URL in the queue in order. On success removes the URL; on failure leaves it and logs a `status="failed"` `RunRecord` with the error string. Continues past failures. Prints a final summary with success/fail counts and per-URL error detail. Doesn't retry failed entries automatically — a second `drain` will.
+
+An empty queue or a batch with at least one success exits 0. A nonempty batch in which every URL fails exits 1. For automation, `podsave drain --json` writes one summary such as `{"succeeded": 2, "failed": 1}` to stdout and sends progress and per-URL diagnostics to stderr. Check the `failed` count to detect a mixed batch.
 
 ### `podsave retry <video_id> [--focus TEXT]`
 
