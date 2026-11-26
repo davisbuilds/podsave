@@ -38,7 +38,7 @@ wheels = [
 
 [[package]]
 name = "assemblyai"
-version = "1.10.0"
+version = "1.10.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -47,9 +47,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/41/03/096837c63a93325a0a13337a4279e4aa37c66a31e329eb7fe3cb678c6e4d/assemblyai-1.10.0.tar.gz", hash = "sha256:c03a5ee16794c270300fab4d2788370940a52a5562bc9e5055ab3299b0e1a5fb", size = 211667, upload-time = "2026-11-12T21:23:33.986Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/58/d0/262686da336618947072b56151faed3ed75d88a1b3aedd966f82f34b9b10/assemblyai-1.10.11.tar.gz", hash = "sha256:f522354b68208811686e7280d867b715d53904387281ad456212fb687e8592da", size = 213902, upload-time = "2026-11-17T01:41:08.467Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/5f/a9a459444f8ac50b318aad53c4271da54a67d4e55951cc7e6a8cc0abd65b/assemblyai-1.10.0-py3-none-any.whl", hash = "sha256:0fd7b25bbdeeb6b9110b2a90a13ad22ed745eb80ee4b345f3fd6f36cfc337e53", size = 207064, upload-time = "2026-11-12T21:23:32.422Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/b8/d4fdeee2dd3f1b7a0ed5a2c79f796a07312facf2378c4d8755843733dcee/assemblyai-1.10.11-py3-none-any.whl", hash = "sha256:0762f197a7209aa4e474f3f7c4416addc89ca953362ed535a2d7319b8d2be7fb", size = 208991, upload-time = "2026-11-17T01:41:06.844Z" },
 ]
 
 [[package]]
@@ -249,7 +249,7 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "3.51.0"
+version = "3.55.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -259,9 +259,9 @@ dependencies = [
     { name = "sniffio" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/db/fa/30f098b042a354f685def1d0fe4c817fc4a534233f497fcf5fc29467c58d/openai-3.51.0.tar.gz", hash = "sha256:1cc9b80eb0f1dc15fa45fbc122ba2c99b7e5302548060c01db5719fa6181a6a9", size = 2415149, upload-time = "2026-11-13T21:13:39.771Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/db/2c78953776d819eac18b10bc830942693203f7d763b0c875ad930a7394a1/openai-3.55.0.tar.gz", hash = "sha256:82f8df6cbe8caf6042cee8c5bf6d6f4289602d01dc0d5a6b948a51cb2fc07cdf", size = 2424334, upload-time = "2026-11-18T05:22:44.688Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/52/f9/d3d9ef409ee4e90de64c9b12f15879f56fc845c2eb9cfe6f314b402de7f1/openai-3.51.0-py3-none-any.whl", hash = "sha256:802b7e8c6ff8cf4d59a2a163126c10ce472adf0409ac41fdaadd47c9b4ed091a", size = 2446085, upload-time = "2026-11-13T21:13:37.969Z" },
+    { url = "https://files.pythonhosted.org/packages/a1/93/6ec762afbed22955be993122b4a50dccfe053211ada3d8761661e8c14b95/openai-3.55.0-py3-none-any.whl", hash = "sha256:376608c04596a8add1c049ccae8e0818849ccecd598b385c38dfdfba6275f5f1", size = 2451243, upload-time = "2026-11-18T05:22:42.573Z" },
 ]
 
 [[package]]
@@ -544,7 +544,7 @@ wheels = [
 
 [[package]]
 name = "typer"
-version = "0.29.1"
+version = "0.29.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -553,9 +553,9 @@ dependencies = [
     { name = "rich" },
     { name = "shellingham" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6c/aa/0de7986aa1fa856adb961c67345189b97d13f6e250b34ba68884df865f07/typer-0.29.1.tar.gz", hash = "sha256:ab6eb3880bf67ce96147734717f9ec333c06f66e361f3ea947d0be43da39f242", size = 205843, upload-time = "2026-11-11T09:18:39.782Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bf/21/37383ece7d0a4995fb8ea97729207c4292b3ff94085002f37b2387063cfb/typer-0.29.2.tar.gz", hash = "sha256:b1998dc5f2c3dedafa1517a9521fa944cc4dc1fadcea085d81a3b10ebcaeb075", size = 205728, upload-time = "2026-11-18T11:09:46.189Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/05/ff/51969745f31cea6bcd12151e668febcf979656316e67a7755942267c1273/typer-0.29.1-py3-none-any.whl", hash = "sha256:00dbc549c13428bec1be55fe1f4d0fb8c6637a310e4f178ef14abe9534ee7b58", size = 121064, upload-time = "2026-11-11T09:18:38.671Z" },
+    { url = "https://files.pythonhosted.org/packages/62/f3/864dcb0e165b52e9f75aa3c7e0aeeb9876f139c66eb14d87856bb173b0fa/typer-0.29.2-py3-none-any.whl", hash = "sha256:f30731f8ca758368b836b3714872e58e395cef8fcaff918c853b1969ed5274e7", size = 121041, upload-time = "2026-11-18T11:09:45.03Z" },
 ]
 
 [[package]]
